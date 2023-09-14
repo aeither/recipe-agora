@@ -19,6 +19,10 @@ import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
 import { ethers } from "ethers";
 import { dealStatusAbi } from "../../lib/dealStatusAbi";
 
+import { createPublicClient, createWalletClient, custom, http, stringToHex } from "viem";
+import { filecoinCalibration, mainnet } from "viem/chains";
+import { privateKeyToAccount } from "viem/accounts";
+
 export const Home = () => {
   const { modelParser, appVersion } = useContext(AppContext);
   const navigate = useNavigate();
@@ -332,6 +336,70 @@ export const Home = () => {
     console.log(fileInfo);
   };
 
+  const submit = async (cid: string) => {
+    const ww = window as any;
+
+    // Viem
+    const publicClient = createPublicClient({
+      chain: filecoinCalibration,
+      transport: http(),
+    });
+    
+    const [account] = await ww.ethereum.request({ method: 'eth_requestAccounts' })
+    const client = createWalletClient({
+      account,
+      chain: filecoinCalibration,
+      transport: custom(ww.ethereum),
+    });
+    console.log("🚀 ~ file: index.tsx:351 ~ submit ~ client:", client);
+    
+    const addresses = await client.getAddresses();
+    console.log("🚀 ~ file: index.tsx:346 ~ submit ~ address:", addresses);
+    const chainId = await client.getChainId();
+    console.log("🚀 ~ file: index.tsx:356 ~ submit ~ chainId:", chainId);
+
+    const { request } = await publicClient.simulateContract({
+      // account,
+      account: client.account,
+      address: "0x6ec8722e6543fB5976a547434c8644b51e24785b",
+      abi: dealStatusAbi,
+      args: [(stringToHex(cid))],
+      functionName: "submit",
+    });
+    const hash =  await client.writeContract(request);
+    console.log("🚀 ~ file: index.tsx:373 ~ submit ~ hash:", hash)
+
+    // Signer
+    const provider = new ethers.providers.JsonRpcProvider(
+      "https://api.calibration.node.glif.io/rpc/v1"
+    );
+    const privateKey = process.env.PRIVATE_KEY;
+    console.log("🚀 ~ file: index.tsx:341 ~ submit ~ privateKey:", privateKey);
+    const signer = new ethers.Wallet(privateKey, provider);
+
+    const apiKey = process.env.LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
+    if (!apiKey) return;
+
+    // Contract
+    const contractAddress = "0x6ec8722e6543fB5976a547434c8644b51e24785b";
+    const contract = new ethers.Contract(
+      contractAddress,
+      dealStatusAbi,
+      signer
+    );
+
+    // Call submit
+    const cidHex = ethers.utils.hexlify(ethers.utils.toUtf8Bytes(cid));
+    const submit = await contract.submit(cidHex, {
+      gasLimit: 500_000_000,
+    });
+
+    const response = await submit.wait();
+    const eventData = response.events[0].args;
+    console.log("Tx Id:", Number(eventData[0]));
+    console.log("CID", ethers.utils.toUtf8String(eventData[1]));
+  };
+
   return (
     <>
       <button onClick={connect}>connect</button>
@@ -388,6 +456,11 @@ export const Home = () => {
         onClick={() =>
           callFileDetails("QmZETJF6NC9p9KkkgczH7SJymhi6HdwvJSv6n2GWdDK4T6")
         }
+      >
+        callFileDetails
+      </button>
+      <button
+        onClick={() => submit("QmZETJF6NC9p9KkkgczH7SJymhi6HdwvJSv6n2GWdDK4T6")}
       >
         callFileDetails
       </button>

@@ -14,6 +14,10 @@ import {
 import { Model } from "@dataverse/model-parser";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../../main";
+import lighthouse from "@lighthouse-web3/sdk";
+import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
+import { ethers } from "ethers";
+import { dealStatusAbi } from "../../lib/dealStatusAbi";
 
 export const Home = () => {
   const { modelParser, appVersion } = useContext(AppContext);
@@ -260,7 +264,7 @@ export const Home = () => {
 
   // Lighthouse
 
-  // Proof of Data Segment Inclusion (PoDSI) 
+  // Proof of Data Segment Inclusion (PoDSI)
   // Reference: https://docs.lighthouse.storage/lighthouse-1/filecoin-virtual-machine/section-a#step-3-understanding-podsi-getting-the-podsi-for-your-file
   const getData = async () => {
     const cid = "QmS7Do1mDZNBJAVyE8N9r6wYMdg27LiSj5W9mmm9TZoeWp";
@@ -278,6 +282,54 @@ export const Home = () => {
     } catch (error) {
       console.error(error);
     }
+  };
+
+  // TODO How to upload file from different path
+  const uploadFile = async () => {
+    const path =
+      "/Users/lin/Documents/Projects/open-data/Lighthouse-FVM-Demo-main/example.jpeg"; // Give path to the file
+
+    const apiKey = process.env.LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
+    if (!apiKey) return;
+
+    const dealParam: DealParameters = {
+      num_copies: 1,
+      repair_threshold: 10, // default 10 days
+      renew_threshold: 2880, //2880 epoch per day, default 28800, min 240(2 hours)
+      miner: ["t017840"],
+      network: "calibration",
+      deal_duration: Infinity,
+    };
+    // Both file and folder supported by upload function
+    const response = await lighthouse.upload(path, apiKey, false, dealParam);
+    console.log(response);
+    console.log(
+      "Visit at: https://gateway.lighthouse.storage/ipfs/" + response.data.Hash
+    );
+  };
+
+  const callFileDetails = async (cid: string) => {
+    // Provider
+    const provider = new ethers.providers.JsonRpcProvider(
+      "https://api.calibration.node.glif.io/rpc/v1"
+    );
+
+    // Contract object
+    const contractAddress = "0x6ec8722e6543fB5976a547434c8644b51e24785b";
+    const contract = new ethers.Contract(
+      contractAddress,
+      dealStatusAbi,
+      provider
+    );
+
+    // Call getAllDeals
+    let fileInfo = await contract.getAllDeals(
+      ethers.utils.hexlify(ethers.utils.toUtf8Bytes(cid)),
+      {
+        gasLimit: 50_000_000,
+      }
+    );
+    console.log(fileInfo);
   };
 
   return (
@@ -332,6 +384,13 @@ export const Home = () => {
       )}
       {/* Lighthouse */}
       <button onClick={getData}>PoDSI: proof of inclusion</button>
+      <button
+        onClick={() =>
+          callFileDetails("QmZETJF6NC9p9KkkgczH7SJymhi6HdwvJSv6n2GWdDK4T6")
+        }
+      >
+        callFileDetails
+      </button>
       <hr />
       <button onClick={() => navigate("/toolkits")}>Go To Toolkits Page</button>
       <br />

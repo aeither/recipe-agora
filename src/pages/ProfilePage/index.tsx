@@ -1,19 +1,16 @@
 import { Button } from "@/components/ui/button";
 import lighthouse from "@lighthouse-web3/sdk";
 import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
-import {
-  createPublicClient,
-  createWalletClient,
-  custom,
-  hexToString,
-  http,
-  stringToHex,
-} from "viem";
+import React, { useState } from "react";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { filecoinCalibration } from "viem/chains";
 import { userInfoAbi } from "../../lib/userInfoAbi";
-import React from "react";
 
 export const ProfilePage = () => {
+const [CID, setCID] = useState<String>();
+const [name, setName] = useState<String>();
+const [bio, setBio] = useState<String>();
+
   const progressCallback = (progressData: {
     total: number;
     uploaded: number;
@@ -57,30 +54,7 @@ export const ProfilePage = () => {
     console.log(
       "Visit at https://gateway.lighthouse.storage/ipfs/" + output.data.Hash
     );
-  };
-
-  const uploadFile2 = async () => {
-    console.log("Uploading...");
-    const path =
-      "/Users/lin/Documents/Projects/open-data/Lighthouse-FVM-Demo-main/example.jpeg"; // Give path to the file
-
-    const apiKey = process.env.LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
-    if (!apiKey) return;
-
-    const dealParam: DealParameters = {
-      num_copies: 1,
-      repair_threshold: 10, // default 10 days
-      renew_threshold: 2880, //2880 epoch per day, default 28800, min 240(2 hours)
-      miner: ["t017840"],
-      network: "calibration",
-      deal_duration: Infinity,
-    };
-    // Both file and folder supported by upload function
-    const response = await lighthouse.upload(path, apiKey, false, dealParam);
-    console.log(response);
-    console.log(
-      "Visit at: https://gateway.lighthouse.storage/ipfs/" + response.data.Hash
-    );
+    setCID(output.data.Hash)
   };
 
   const saveInfo = async () => {
@@ -102,12 +76,13 @@ export const ProfilePage = () => {
       transport: custom(ww.ethereum),
     });
 
+    console.log("name, CID, bio: ",name, CID, bio)
     const { request } = await publicClient.simulateContract({
       // account,
       account: client.account,
       address: userInfoAddress,
       abi: userInfoAbi,
-      args: ["one", "two", "three"],
+      args: [name, CID, bio],
       functionName: "addUser",
     });
     const hash = await client.writeContract(request);
@@ -152,11 +127,12 @@ export const ProfilePage = () => {
 
   return (
     <>
-      <div>hello world</div>
+      <div>Profile</div>
       <input onChange={(e) => uploadFileOriginal(e.target.files)} type="file" />
-      <Button onClick={uploadFile2}>Upload Local Path</Button>
-      <Button onClick={saveInfo}>Interact User Contract</Button>
-      <Button onClick={getUserInfo}>Get User Contract</Button>
+      <input onChange={(e) => setName(e.target.value)} type="text" />
+      <input onChange={(e) => setBio(e.target.value)} type="text" />
+      <Button onClick={saveInfo}>Save</Button>
+      <Button onClick={getUserInfo}>Get Profile Info</Button>
     </>
   );
 };

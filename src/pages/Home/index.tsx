@@ -10,6 +10,7 @@ import {
   useStore,
   useUnlockStream,
   useUpdateStream,
+  useUploadFile,
 } from "@dataverse/hooks";
 import { Model } from "@dataverse/model-parser";
 import { useNavigate } from "react-router-dom";
@@ -27,14 +28,22 @@ import {
   http,
   stringToHex,
 } from "viem";
-import { filecoinCalibration, mainnet } from "viem/chains";
-import { privateKeyToAccount } from "viem/accounts";
+import { filecoinCalibration } from "viem/chains";
+import { useForm } from "react-hook-form";
 
 export const Home = () => {
   const { modelParser, appVersion } = useContext(AppContext);
   const navigate = useNavigate();
   const [postModel, setPostModel] = useState<Model>();
   const [currentStreamId, setCurrentStreamId] = useState<string>();
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+  const onSubmit = (data) => console.log(data);
 
   useEffect(() => {
     const postModel = modelParser.getModelByName("post");
@@ -542,6 +551,22 @@ export const Home = () => {
       <hr />
       <button onClick={() => navigate("/toolkits")}>Go To Toolkits Page</button>
       <br />
+      <hr />
+      <button onClick={() => navigate("/profile")}>Go To Profile Page</button>
+      <br />
+
+      {/* New Post */}
+      <form onSubmit={handleSubmit(onSubmit)}>
+        {/* register your input into the hook by invoking the "register" function */}
+        <input defaultValue="test" {...register("example")} />
+
+        {/* include validation with required or other standard HTML validation rules */}
+        <input {...register("exampleRequired", { required: true })} />
+        {/* errors will return when field validation fails  */}
+        {errors.exampleRequired && <span>This field is required</span>}
+
+        <input type="submit" />
+      </form>
     </>
   );
 };

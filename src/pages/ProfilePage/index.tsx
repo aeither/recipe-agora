@@ -25,7 +25,7 @@ export const ProfilePage = () => {
     console.log(percentageDone);
   };
 
-  const uploadFile = async (file: FileList | null) => {
+  const uploadFileOriginal = async (file: any) => {
     const apiKey = process.env.LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
     if (!apiKey) return;
 
@@ -147,13 +147,13 @@ export const ProfilePage = () => {
       functionName: "users",
       args: [client.account.address],
     });
-    console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data)
+    console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data);
   };
 
   return (
     <>
       <div>hello world</div>
-      <input onChange={(e) => uploadFile(e.target.files)} type="file" />
+      <input onChange={(e) => uploadFileOriginal(e.target.files)} type="file" />
       <Button onClick={uploadFile2}>Upload Local Path</Button>
       <Button onClick={saveInfo}>Interact User Contract</Button>
       <Button onClick={getUserInfo}>Get User Contract</Button>

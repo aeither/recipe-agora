@@ -421,6 +421,51 @@ export const Home = () => {
     // console.log("CID", ethers.utils.toUtf8String(eventData[1]));
   };
 
+  const deal_status = async (cid: string): Promise<void> => {
+    const status = await lighthouse.dealStatus(cid);
+    console.log(
+      "🚀 ~ file: index.tsx:426 ~ constdeal_status= ~ status:",
+      status
+    );
+  };
+
+  // CORS ISSUE
+  const register_job = async (): Promise<void> => {
+    const formData = new FormData();
+
+    const cid = "QmTgLAp2Ze2bv7WV2wnZrvtpR5pKJxZ2vtBxZPwr7rM61a";
+    // Optional Parameters
+    const requestReceivedTime = new Date();
+    const endDate = requestReceivedTime.setMonth(
+      requestReceivedTime.getMonth() + 1
+    );
+    const replicationTarget = 2;
+    const epochs = 4; // how many epochs before the deal end should the deal be renewed
+    formData.append("cid", cid);
+    formData.append("endDate", endDate.toString());
+    formData.append("replicationTarget", replicationTarget.toString());
+    formData.append("epochs", epochs.toString());
+
+    try {
+      const response = await fetch(
+        "https://calibration.lighthouse.storage/api/register_job",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <>
       <button onClick={connect}>connect</button>
@@ -485,6 +530,15 @@ export const Home = () => {
       >
         Submit
       </button>
+      <button
+        onClick={() =>
+          deal_status("QmTgLAp2Ze2bv7WV2wnZrvtpR5pKJxZ2vtBxZPwr7rM61a")
+        }
+      >
+        Deal Status
+      </button>
+      <button onClick={() => register_job()}>Register Job</button>
+
       <hr />
       <button onClick={() => navigate("/toolkits")}>Go To Toolkits Page</button>
       <br />

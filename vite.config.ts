@@ -1,8 +1,10 @@
 import reactRefresh from "@vitejs/plugin-react-refresh";
 import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import path from "path";
 
 export default defineConfig({
-  plugins: [reactRefresh()],
+  plugins: [react(), reactRefresh()],
   resolve: {
     dedupe: ["react", "react-dom"],
     alias: {
@@ -10,6 +12,7 @@ export default defineConfig({
       events: "rollup-plugin-node-polyfills/polyfills/events",
       // stream: "rollup-plugin-node-polyfills/polyfills/stream",
       // util: "rollup-plugin-node-polyfills/polyfills/util",
+      "@": path.resolve(__dirname, "./src"),
     },
   },
   optimizeDeps: {

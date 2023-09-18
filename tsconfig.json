@@ -1,5 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     "jsx": "react",
     "useDefineForClassFields": true,
     "allowJs": false,
@@ -38,3 +42,5 @@
   },
   "include": ["src", "output", "**/package.json", "packages", "providers"]
 }
+
+

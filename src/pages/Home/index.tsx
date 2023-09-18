@@ -320,12 +320,18 @@ export const Home = () => {
       network: "calibration",
       deal_duration: Infinity,
     };
-    // Both file and folder supported by upload function
-    const response = await lighthouse.upload(path, apiKey, false, dealParam);
-    console.log(response);
-    console.log(
-      "Visit at: https://gateway.lighthouse.storage/ipfs/" + response.data.Hash
-    );
+
+    try {
+      // Both file and folder supported by upload function
+      const response = await lighthouse.upload(path, apiKey, false, dealParam);
+      console.log(response);
+      console.log(
+        "Visit at: https://gateway.lighthouse.storage/ipfs/" +
+          response.data.Hash
+      );
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const callFileDetails = async (cid: string) => {
@@ -526,6 +532,7 @@ export const Home = () => {
         </div>
       )}
       {/* Lighthouse */}
+      <button onClick={uploadFile}>uploadFile</button>
       <button onClick={getData}>PoDSI: proof of inclusion</button>
       <button
         onClick={() =>

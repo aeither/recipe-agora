@@ -4,6 +4,7 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "types": ["vite/client"],
     "jsx": "react",
     "useDefineForClassFields": true,
     "allowJs": false,

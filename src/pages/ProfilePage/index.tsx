@@ -7,9 +7,9 @@ import { filecoinCalibration } from "viem/chains";
 import { userInfoAbi } from "../../lib/userInfoAbi";
 
 export const ProfilePage = () => {
-const [CID, setCID] = useState<String>();
-const [name, setName] = useState<String>();
-const [bio, setBio] = useState<String>();
+  const [CID, setCID] = useState<String>();
+  const [name, setName] = useState<String>();
+  const [bio, setBio] = useState<String>();
 
   const progressCallback = (progressData: {
     total: number;
@@ -23,8 +23,11 @@ const [bio, setBio] = useState<String>();
   };
 
   const uploadFileOriginal = async (file: any) => {
-    const apiKey = process.env.LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
-    if (!apiKey) return;
+    const apiKey = import.meta.env.VITE_LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
+    if (typeof apiKey !== "string") {
+      console.log("apiKey is NOT string");
+      return;
+    }
 
     const dealParam: DealParameters = {
       num_copies: 1,
@@ -54,7 +57,7 @@ const [bio, setBio] = useState<String>();
     console.log(
       "Visit at https://gateway.lighthouse.storage/ipfs/" + output.data.Hash
     );
-    setCID(output.data.Hash)
+    setCID("https://gateway.lighthouse.storage/ipfs/" + output.data.Hash);
   };
 
   const saveInfo = async () => {
@@ -76,7 +79,7 @@ const [bio, setBio] = useState<String>();
       transport: custom(ww.ethereum),
     });
 
-    console.log("name, CID, bio: ",name, CID, bio)
+    console.log("name, CID, bio: ", name, CID, bio);
     const { request } = await publicClient.simulateContract({
       // account,
       account: client.account,

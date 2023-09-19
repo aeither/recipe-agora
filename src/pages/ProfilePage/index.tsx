@@ -16,6 +16,8 @@ import {
   NavigationMenuTrigger,
   NavigationMenuViewport,
 } from "@/components/ui/navigation-menu";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 
 interface Item {
   id: number;
@@ -323,68 +325,89 @@ export const ProfilePage = () => {
   return (
     <div className="relative flex min-h-screen flex-col">
       <NavigationBar />
-      {/* Section 1 */}
-      <div>
-        <h1>Items</h1>
-        <input
-          onChange={(e) => uploadFileOriginal(e.target.files)}
-          type="file"
-        />
-        <input onChange={(e) => setTitle(e.target.value)} type="text" />
 
-        <input
-          type="text"
-          placeholder="Search items..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-        <button onClick={handleSearch}>Search</button>
+      {/* Body */}
+      <div className="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
+        <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
+          {/* Section 1 */}
+          <div>
+            <div className="space-y-2">
+            <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">
+              Create Recipe
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              <span className="display: inline-block; vertical-align: top; text-decoration: inherit; max-width: 340px;">
+                Give a name, add the ingredients, instructions, upload your dish
+                and your are ready to share
+              </span>
+            </p>
+            </div>
+            <Input
+              onChange={(e) => uploadFileOriginal(e.target.files)}
+              type="file"
+            />
+            <Input onChange={(e) => setTitle(e.target.value)} type="text" />
 
-        <ul>
-          {items.map((item) => (
-            <li key={item.id}>
-              {item.name}
-              <button onClick={() => addToSelected(item)}>Add to Cart</button>
-            </li>
-          ))}
-        </ul>
-        <h2>Selected Ingredients</h2>
-        <ul>
-          {cart.map((cartItem) => (
-            <li key={cartItem.id}>
-              {cartItem.name} - Quantity: {cartItem.quantity}
-              <button onClick={() => reduceQuantity(cartItem)}>-</button>
-              <button onClick={() => increaseQuantity(cartItem)}>+</button>
-              <button onClick={() => removeItem(cartItem)}>Remove</button>
-            </li>
-          ))}
-        </ul>
-        <button onClick={handleExportCart}>Export Ingredients</button>
-        <h2>Ingredients</h2>
-        <textarea rows={5} cols={30} value={cartText} readOnly />
-      </div>
+            <Input
+              type="text"
+              placeholder="Search items..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <button onClick={handleSearch}>Search</button>
 
-      {/* <input onChange={(e) => setIngredients(e.target.value)} type="text" /> */}
-      <input onChange={(e) => setInstructions(e.target.value)} type="text" />
-      <Button onClick={saveInfo}>Save</Button>
+            <ul>
+              {items.map((item) => (
+                <li key={item.id}>
+                  {item.name}
+                  <button onClick={() => addToSelected(item)}>
+                    Add to Cart
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <h2>Selected Ingredients</h2>
+            <ul>
+              {cart.map((cartItem) => (
+                <li key={cartItem.id}>
+                  {cartItem.name} - Quantity: {cartItem.quantity}
+                  <button onClick={() => reduceQuantity(cartItem)}>-</button>
+                  <button onClick={() => increaseQuantity(cartItem)}>+</button>
+                  <button onClick={() => removeItem(cartItem)}>Remove</button>
+                </li>
+              ))}
+            </ul>
+            <button onClick={handleExportCart}>Export Ingredients</button>
+            <h2>Ingredients</h2>
+            <Textarea value={cartText} readOnly />
+          </div>
 
-      {/* Section 2 */}
-      {CID && (
-        <>
-          <img
-            src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
-            alt="Profile Image"
+          {/* <Input onChange={(e) => setIngredients(e.target.value)} type="text" /> */}
+          <Input
+            onChange={(e) => setInstructions(e.target.value)}
+            type="text"
           />
-          <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
-          <Button onClick={getPoDSI}>getPoDSI</Button>
-          <Button onClick={deal_status}>deal_status</Button>
-          <Button onClick={register_job}>register_job</Button>
-        </>
-      )}
+          <Button onClick={saveInfo}>Save</Button>
 
-      {/* Show Recipes */}
-      <Button onClick={getAllRecipes}>Refresh</Button>
-      <RecipeList recipes={recipes} />
+          {/* Section 2 */}
+          {CID && (
+            <>
+              <img
+                src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
+                alt="Profile Image"
+              />
+              <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
+              <Button onClick={getPoDSI}>getPoDSI</Button>
+              <Button onClick={deal_status}>deal_status</Button>
+              <Button onClick={register_job}>register_job</Button>
+            </>
+          )}
+
+          {/* Show Recipes */}
+          <Button onClick={getAllRecipes}>Refresh</Button>
+          <RecipeList recipes={recipes} />
+        </main>
+      </div>
     </div>
   );
 };
@@ -392,8 +415,8 @@ export const ProfilePage = () => {
 function NavigationBar() {
   return (
     <header className="supports-backdrop-blur:bg-background/60 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-      <div className="container flex h-14 items-center">
-        <h1 className="text-white text-2xl font-bold">RecipeAgora</h1>
+      <div className="container flex h-14 items-center justify-center">
+        <h1 className="text-white text-xl font-bold">RecipeAgora</h1>
         {/* <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>

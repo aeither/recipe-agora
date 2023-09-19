@@ -101,7 +101,7 @@ export const ProfilePage = () => {
   };
 
   const getUserInfo = async () => {
-    const recipeRegistryAddress = "0xf532b2D586262Cb43E8595E7c43b96cf5734Fd0E";
+    const recipeRegistryAddress = "0x5145Dc366F25f96f219850F5aCaD50DF76eE424D";
     const ww = window as any;
 
     // Viem
@@ -122,7 +122,7 @@ export const ProfilePage = () => {
     const data = await publicClient.readContract({
       address: recipeRegistryAddress,
       abi: recipeRegistryAbi,
-      functionName: "",
+      functionName: "getAllRecipes",
     });
     console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data);
   };

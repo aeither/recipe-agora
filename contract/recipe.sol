@@ -45,9 +45,7 @@ contract RecipeRegistry {
         );
     }
 
-    function getRecipeInfo(
-        uint256 _recipeId
-    )
+    function getRecipeInfo(uint256 _recipeId)
         public
         view
         returns (
@@ -67,5 +65,9 @@ contract RecipeRegistry {
             recipe.author,
             recipe.cid
         );
+    }
+
+    function getAllRecipes() public view returns (Recipe[] memory) {
+        return recipes;
     }
 }

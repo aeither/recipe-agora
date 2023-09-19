@@ -1,20 +1,14 @@
+import { Food, FoodSearchResponse } from "@/lib/types";
 import React, { useState } from "react";
 
 interface Item {
   id: number;
   name: string;
-  price: number;
   quantity: number;
 }
 
 export function Dashboard() {
-  const initialItems: Item[] = [
-    { id: 1, name: "Item 1", price: 10, quantity: 0 },
-    { id: 2, name: "Item 2", price: 15, quantity: 0 },
-    { id: 3, name: "Item 3", price: 20, quantity: 0 },
-  ];
-
-  const [items, setItems] = useState(initialItems);
+  const [items, setItems] = useState<Item[]>([]);
   const [cart, setCart] = useState<Item[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [cartText, setCartText] = useState<string>("");
@@ -74,17 +68,38 @@ export function Dashboard() {
 
   const handleExportCart = () => {
     const cartItemsText = cart
-      .map(
-        (cartItem) =>
-          `${cartItem.name} - $${cartItem.price} x ${cartItem.quantity}`
-      )
+      .map((cartItem) => `${cartItem.name} - Quantity: ${cartItem.quantity}`)
       .join("\n");
     setCartText(cartItemsText);
   };
 
-  const filteredItems = items.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSearch = async () => {
+    const apiKey = import.meta.env.VITE_USDA_API_KEY;
+    if (typeof apiKey !== "string") {
+      console.log("apiKey is NOT string");
+      return;
+    }
+    const pageSize = 5;
+    const pageNumber = 1;
+    const dataType = "Foundation";
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${searchQuery}&api_key=${apiKey}&pageNumber=${pageNumber}&pageSize=${pageSize}&dataType=${dataType}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data: FoodSearchResponse = await response.json();
+      const foodItems = data.foods.map((food) => ({
+        id: food.fdcId,
+        name: food.description,
+        quantity: 0,
+      }));
+      setItems(foodItems);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   return (
     <div className="App">
@@ -95,10 +110,12 @@ export function Dashboard() {
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
       />
+      <button onClick={handleSearch}>Search</button>
+
       <ul>
-        {filteredItems.map((item) => (
+        {items.map((item) => (
           <li key={item.id}>
-            {item.name} - ${item.price}
+            {item.name}
             <button onClick={() => addToSelected(item)}>Add to Cart</button>
           </li>
         ))}
@@ -107,7 +124,7 @@ export function Dashboard() {
       <ul>
         {cart.map((cartItem) => (
           <li key={cartItem.id}>
-            {cartItem.name} - ${cartItem.price} x {cartItem.quantity}
+            {cartItem.name} - Quantity: {cartItem.quantity}
             <button onClick={() => reduceQuantity(cartItem)}>-</button>
             <button onClick={() => increaseQuantity(cartItem)}>+</button>
             <button onClick={() => removeItem(cartItem)}>Remove</button>

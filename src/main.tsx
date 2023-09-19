@@ -4,7 +4,6 @@ import App from "./App";
 import { DataverseContextProvider } from "@dataverse/hooks";
 import pacakage from "../package.json";
 import app from "../output/app.json";
-import "./index.css";
 import "./global.css";
 import { ModelParser, Output } from "@dataverse/model-parser";
 import { WalletProvider } from "@dataverse/wallet-provider";

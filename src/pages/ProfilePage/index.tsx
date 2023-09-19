@@ -18,6 +18,34 @@ import {
 } from "@/components/ui/navigation-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { useForm } from "react-hook-form";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+
+const formSchema = z.object({
+  title: z.string(),
+  ingredients: z.string(),
+  instructions: z.string(),
+  cid: z.string(),
+});
 
 interface Item {
   id: number;
@@ -40,6 +68,21 @@ export const ProfilePage = () => {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [cartText, setCartText] = useState<string>("");
 
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "",
+      ingredients: "",
+      instructions: "",
+      cid: "",
+    },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+    await saveInfo();
+  }
+
   // Logics
   const progressCallback = (progressData: {
     total: number;
@@ -52,7 +95,7 @@ export const ProfilePage = () => {
     console.log(percentageDone);
   };
 
-  const uploadFileOriginal = async (file: any) => {
+  const uploadRecipeImage = async (file: any) => {
     const apiKey = import.meta.env.VITE_LIGHTHOUSE_API_KEY; //generate from https://files.lighthouse.storage/ or cli (lighthouse-web3 api-key --new)
     if (typeof apiKey !== "string") {
       console.log("apiKey is NOT string");
@@ -88,6 +131,7 @@ export const ProfilePage = () => {
       "Visit at https://gateway.lighthouse.storage/ipfs/" + output.data.Hash
     );
     setCID(output.data.Hash);
+    form.setValue("cid", output.data.Hash);
   };
 
   const saveInfo = async () => {
@@ -272,6 +316,7 @@ export const ProfilePage = () => {
       .join("\n");
     setCartText(cartItemsText);
     setIngredients(cartItemsText);
+    form.setValue("ingredients", cartItemsText);
   };
 
   const handleSearch = async () => {
@@ -331,71 +376,196 @@ export const ProfilePage = () => {
         <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
           {/* Section 1 */}
           <div>
-            <div className="space-y-2">
-            <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">
-              Create Recipe
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              <span className="display: inline-block; vertical-align: top; text-decoration: inherit; max-width: 340px;">
-                Give a name, add the ingredients, instructions, upload your dish
-                and your are ready to share
-              </span>
-            </p>
+            <div className="space-y-2 pb-4">
+              <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">
+                Create Recipe
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                <span className="display: inline-block; vertical-align: top; text-decoration: inherit; max-width: 340px;">
+                  Give a name, add the ingredients, instructions, upload your
+                  dish and your are ready to share
+                </span>
+              </p>
             </div>
-            <Input
-              onChange={(e) => uploadFileOriginal(e.target.files)}
-              type="file"
-            />
-            <Input onChange={(e) => setTitle(e.target.value)} type="text" />
 
-            <Input
-              type="text"
-              placeholder="Search items..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <button onClick={handleSearch}>Search</button>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-8"
+              >
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="name" {...field} />
+                      </FormControl>
+                      <FormDescription>The name of the recipe.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="cid"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Image</FormLabel>
+                      <FormControl>
+                        <>
+                          {CID && (
+                            <img
+                              className="rounded-md"
+                              src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
+                              alt="Profile Image"
+                            />
+                          )}
+                          <Input
+                            onChange={(e) => uploadRecipeImage(e.target.files)}
+                            type="file"
+                          />
+                        </>
+                      </FormControl>
+                      <FormDescription>The image of the dish.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="ingredients"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Ingredients</FormLabel>
+                      <FormControl>
+                        <>
+                          <div className="flex">
+                            <Input
+                              type="text"
+                              placeholder="Search items..."
+                              value={searchQuery}
+                              onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <Button onClick={handleSearch}>Search</Button>
+                          </div>
 
-            <ul>
-              {items.map((item) => (
-                <li key={item.id}>
-                  {item.name}
-                  <button onClick={() => addToSelected(item)}>
-                    Add to Cart
-                  </button>
-                </li>
-              ))}
-            </ul>
-            <h2>Selected Ingredients</h2>
-            <ul>
-              {cart.map((cartItem) => (
-                <li key={cartItem.id}>
-                  {cartItem.name} - Quantity: {cartItem.quantity}
-                  <button onClick={() => reduceQuantity(cartItem)}>-</button>
-                  <button onClick={() => increaseQuantity(cartItem)}>+</button>
-                  <button onClick={() => removeItem(cartItem)}>Remove</button>
-                </li>
-              ))}
-            </ul>
-            <button onClick={handleExportCart}>Export Ingredients</button>
-            <h2>Ingredients</h2>
-            <Textarea value={cartText} readOnly />
+                          {items.length > 0 && (
+                            <>
+                              <Card>
+                                <CardHeader>
+                                  <CardTitle>Choose</CardTitle>
+                                </CardHeader>
+                                <CardContent>
+                                  <ul className="flex flex-col gap-1 pb-4">
+                                    {items.map((item) => (
+                                      <li
+                                        className="flex w-full justify-between"
+                                        key={item.id}
+                                      >
+                                        {item.name}
+                                        <Button
+                                          type="button"
+                                          size={"sm"}
+                                          variant={"outline"}
+                                          onClick={() => addToSelected(item)}
+                                        >
+                                          Add to Cart
+                                        </Button>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                  <Separator />
+
+                                  <ul className="pt-4">
+                                    {cart.map((cartItem) => (
+                                      <li key={cartItem.id}>
+                                        <p className="w-full truncate">
+                                          {cartItem.name} x {cartItem.quantity}
+                                        </p>
+                                        <div className="flex gap-1">
+                                          <Button
+                                            type="button"
+                                            onClick={() =>
+                                              reduceQuantity(cartItem)
+                                            }
+                                            variant={"outline"}
+                                          >
+                                            -
+                                          </Button>
+                                          <Button
+                                            type="button"
+                                            onClick={() =>
+                                              increaseQuantity(cartItem)
+                                            }
+                                            variant={"outline"}
+                                          >
+                                            +
+                                          </Button>
+                                          <Button
+                                            type="button"
+                                            onClick={() => removeItem(cartItem)}
+                                            variant={"destructive"}
+                                          >
+                                            Remove
+                                          </Button>
+                                        </div>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </CardContent>
+                                <CardFooter>
+                                  <Button
+                                    onClick={handleExportCart}
+                                    type="button"
+                                  >
+                                    Confirm Ingredients
+                                  </Button>
+                                </CardFooter>
+                              </Card>
+                              <h2>Ingredients</h2>
+                              <Textarea value={cartText} readOnly />
+                            </>
+                          )}
+                        </>
+                      </FormControl>
+                      <FormDescription>Choose the ingredients.</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="instructions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Instructions</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          // onChange={(e) => setInstructions(e.target.value)}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        The instructions to prepare the recipe.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <Button type="submit">Submit</Button>
+              </form>
+            </Form>
           </div>
 
-          {/* <Input onChange={(e) => setIngredients(e.target.value)} type="text" /> */}
-          <Input
-            onChange={(e) => setInstructions(e.target.value)}
-            type="text"
-          />
-          <Button onClick={saveInfo}>Save</Button>
+          {/* <Button onClick={saveInfo}>Save</Button> */}
 
           {/* Section 2 */}
           {CID && (
             <>
-              <img
-                src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
-                alt="Profile Image"
-              />
               <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
               <Button onClick={getPoDSI}>getPoDSI</Button>
               <Button onClick={deal_status}>deal_status</Button>

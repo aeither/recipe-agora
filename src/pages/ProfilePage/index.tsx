@@ -7,9 +7,9 @@ import { filecoinCalibration } from "viem/chains";
 import { userInfoAbi } from "../../lib/userInfoAbi";
 
 export const ProfilePage = () => {
-  const [CID, setCID] = useState<String>();
-  const [name, setName] = useState<String>();
-  const [bio, setBio] = useState<String>();
+  const [CID, setCID] = useState<string>();
+  const [name, setName] = useState<string>();
+  const [bio, setBio] = useState<string>();
 
   const progressCallback = (progressData: {
     total: number;
@@ -57,7 +57,7 @@ export const ProfilePage = () => {
     console.log(
       "Visit at https://gateway.lighthouse.storage/ipfs/" + output.data.Hash
     );
-    setCID("https://gateway.lighthouse.storage/ipfs/" + output.data.Hash);
+    setCID(output.data.Hash);
   };
 
   const saveInfo = async () => {
@@ -128,12 +128,108 @@ export const ProfilePage = () => {
     console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data);
   };
 
+  const getPoDSI = async () => {
+    try {
+      const response = await fetch(
+        `https://api.lighthouse.storage/api/lighthouse/get_proof?cid=${CID}&network=testnet`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Fetch request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deal_status = async (): Promise<void> => {
+    if (!CID) {
+      console.log("CID undefined");
+      return;
+    }
+    console.log("🚀 ~ file: index.tsx:150 ~ constdeal_status= ~ CID:", CID);
+    // const status = await lighthouse.dealStatus(CID);
+
+    const response = await fetch(
+      `https://calibration.lighthouse.storage/api/deal_status?cid=${CID}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Fetch request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+
+    // console.log(
+    //   "🚀 ~ file: index.tsx:426 ~ constdeal_status= ~ status:",
+    //   status
+    // );
+  };
+
+  const register_job = async (): Promise<void> => {
+    if (!CID) {
+      console.log("CID undefined");
+      return;
+    }
+
+    const formData = new FormData();
+
+    const cid = CID;
+    // Optional Parameters
+    const requestReceivedTime = new Date();
+    const endDate = requestReceivedTime.setMonth(
+      requestReceivedTime.getMonth() + 1
+    );
+    const replicationTarget = 2;
+    const epochs = 4; // how many epochs before the deal end should the deal be renewed
+    formData.append("cid", cid);
+    formData.append("endDate", endDate.toString());
+    formData.append("replicationTarget", replicationTarget.toString());
+    formData.append("epochs", epochs.toString());
+
+    try {
+      const response = await fetch(
+        "https://calibration.lighthouse.storage/api/register_job",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   return (
     <>
       <div>Profile</div>
       <input onChange={(e) => uploadFileOriginal(e.target.files)} type="file" />
       <input onChange={(e) => setName(e.target.value)} type="text" />
       <input onChange={(e) => setBio(e.target.value)} type="text" />
+
+      {CID && (
+        <>
+          <img
+            src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
+            alt="Profile Image"
+          />
+          <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
+          <Button onClick={getPoDSI}>getPoDSI</Button>
+          <Button onClick={deal_status}>deal_status</Button>
+          <Button onClick={register_job}>register_job</Button>
+        </>
+      )}
       <Button onClick={saveInfo}>Save</Button>
       <Button onClick={getUserInfo}>Get Profile Info</Button>
     </>

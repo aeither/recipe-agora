@@ -39,6 +39,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const formSchema = z.object({
   title: z.string(),
@@ -374,208 +375,233 @@ export const ProfilePage = () => {
       {/* Body */}
       <div className="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
         <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
-          {/* Section 1 */}
-          <div>
-            <div className="space-y-2 pb-4">
-              <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">
-                Create Recipe
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                <span className="display: inline-block; vertical-align: top; text-decoration: inherit; max-width: 340px;">
-                  Give a name, add the ingredients, instructions, upload your
-                  dish and your are ready to share
-                </span>
-              </p>
-            </div>
+          <Tabs defaultValue="account" className="flex flex-col w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="account">Recipes</TabsTrigger>
+              <TabsTrigger value="password">Create</TabsTrigger>
+            </TabsList>
+            {/* Section Recipes */}
+            <TabsContent value="account">
+              {CID && (
+                <>
+                  <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
+                  <Button onClick={getPoDSI}>getPoDSI</Button>
+                  <Button onClick={deal_status}>deal_status</Button>
+                  <Button onClick={register_job}>register_job</Button>
+                </>
+              )}
 
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-8"
-              >
-                <FormField
-                  control={form.control}
-                  name="title"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="name" {...field} />
-                      </FormControl>
-                      <FormDescription>The name of the recipe.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cid"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Image</FormLabel>
-                      <FormControl>
-                        <>
-                          {CID && (
-                            <img
-                              className="rounded-md"
-                              src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
-                              alt="Profile Image"
-                            />
-                          )}
-                          <Input
-                            onChange={(e) => uploadRecipeImage(e.target.files)}
-                            type="file"
-                          />
-                        </>
-                      </FormControl>
-                      <FormDescription>The image of the dish.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="ingredients"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Ingredients</FormLabel>
-                      <FormControl>
-                        <>
-                          <div className="flex">
-                            <Input
-                              type="text"
-                              placeholder="Search items..."
-                              value={searchQuery}
-                              onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                            <Button onClick={handleSearch}>Search</Button>
-                          </div>
+              {/* Show Recipes */}
+              <Button onClick={getAllRecipes}>Refresh</Button>
+              <RecipeList recipes={recipes} />
+            </TabsContent>
 
-                          {items.length > 0 && (
+            {/* Section Create */}
+            <TabsContent value="password">
+              <div>
+                <div className="space-y-2 pb-4">
+                  <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">
+                    Create Recipe
+                  </h1>
+                  <p className="text-lg text-muted-foreground">
+                    <span className="display: inline-block; vertical-align: top; text-decoration: inherit; max-width: 340px;">
+                      Give a name, add the ingredients, instructions, upload
+                      your dish and your are ready to share
+                    </span>
+                  </p>
+                </div>
+
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className="space-y-8"
+                  >
+                    <FormField
+                      control={form.control}
+                      name="title"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Name</FormLabel>
+                          <FormControl>
+                            <Input placeholder="name" {...field} />
+                          </FormControl>
+                          <FormDescription>
+                            The name of the recipe.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="cid"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Image</FormLabel>
+                          <FormControl>
                             <>
-                              <Card>
-                                <CardHeader>
-                                  <CardTitle>Choose</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                  <ul className="flex flex-col gap-1 pb-4">
-                                    {items.map((item) => (
-                                      <li
-                                        className="flex w-full justify-between"
-                                        key={item.id}
-                                      >
-                                        {item.name}
-                                        <Button
-                                          type="button"
-                                          size={"sm"}
-                                          variant={"outline"}
-                                          onClick={() => addToSelected(item)}
-                                        >
-                                          Add to Cart
-                                        </Button>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                  <Separator />
-
-                                  <ul className="pt-4">
-                                    {cart.map((cartItem) => (
-                                      <li key={cartItem.id}>
-                                        <p className="w-full truncate">
-                                          {cartItem.name} x {cartItem.quantity}
-                                        </p>
-                                        <div className="flex gap-1">
-                                          <Button
-                                            type="button"
-                                            onClick={() =>
-                                              reduceQuantity(cartItem)
-                                            }
-                                            variant={"outline"}
-                                          >
-                                            -
-                                          </Button>
-                                          <Button
-                                            type="button"
-                                            onClick={() =>
-                                              increaseQuantity(cartItem)
-                                            }
-                                            variant={"outline"}
-                                          >
-                                            +
-                                          </Button>
-                                          <Button
-                                            type="button"
-                                            onClick={() => removeItem(cartItem)}
-                                            variant={"destructive"}
-                                          >
-                                            Remove
-                                          </Button>
-                                        </div>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </CardContent>
-                                <CardFooter>
-                                  <Button
-                                    onClick={handleExportCart}
-                                    type="button"
-                                  >
-                                    Confirm Ingredients
-                                  </Button>
-                                </CardFooter>
-                              </Card>
-                              <h2>Ingredients</h2>
-                              <Textarea value={cartText} readOnly />
+                              {CID && (
+                                <img
+                                  className="rounded-md"
+                                  src={`https://gateway.lighthouse.storage/ipfs/${CID}`}
+                                  alt="Profile Image"
+                                />
+                              )}
+                              <Input
+                                onChange={(e) =>
+                                  uploadRecipeImage(e.target.files)
+                                }
+                                type="file"
+                              />
                             </>
-                          )}
-                        </>
-                      </FormControl>
-                      <FormDescription>Choose the ingredients.</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                          </FormControl>
+                          <FormDescription>
+                            The image of the dish.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="ingredients"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Ingredients</FormLabel>
+                          <FormControl>
+                            <>
+                              <div className="flex">
+                                <Input
+                                  type="text"
+                                  placeholder="Search items..."
+                                  value={searchQuery}
+                                  onChange={(e) =>
+                                    setSearchQuery(e.target.value)
+                                  }
+                                />
+                                <Button onClick={handleSearch}>Search</Button>
+                              </div>
 
-                <FormField
-                  control={form.control}
-                  name="instructions"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Instructions</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          // onChange={(e) => setInstructions(e.target.value)}
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormDescription>
-                        The instructions to prepare the recipe.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                              {items.length > 0 && (
+                                <>
+                                  <Card>
+                                    <CardHeader>
+                                      <CardTitle>Choose</CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <ul className="flex flex-col gap-1 pb-4">
+                                        {items.map((item) => (
+                                          <li
+                                            className="flex w-full justify-between"
+                                            key={item.id}
+                                          >
+                                            {item.name}
+                                            <Button
+                                              type="button"
+                                              size={"sm"}
+                                              variant={"outline"}
+                                              onClick={() =>
+                                                addToSelected(item)
+                                              }
+                                            >
+                                              Add to Cart
+                                            </Button>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                      <Separator />
 
-                <Button type="submit">Submit</Button>
-              </form>
-            </Form>
-          </div>
+                                      <ul className="pt-4">
+                                        {cart.map((cartItem) => (
+                                          <li key={cartItem.id}>
+                                            <p className="w-full truncate">
+                                              {cartItem.name} x{" "}
+                                              {cartItem.quantity}
+                                            </p>
+                                            <div className="flex gap-1">
+                                              <Button
+                                                type="button"
+                                                onClick={() =>
+                                                  reduceQuantity(cartItem)
+                                                }
+                                                variant={"outline"}
+                                              >
+                                                -
+                                              </Button>
+                                              <Button
+                                                type="button"
+                                                onClick={() =>
+                                                  increaseQuantity(cartItem)
+                                                }
+                                                variant={"outline"}
+                                              >
+                                                +
+                                              </Button>
+                                              <Button
+                                                type="button"
+                                                onClick={() =>
+                                                  removeItem(cartItem)
+                                                }
+                                                variant={"destructive"}
+                                              >
+                                                Remove
+                                              </Button>
+                                            </div>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </CardContent>
+                                    <CardFooter>
+                                      <Button
+                                        onClick={handleExportCart}
+                                        type="button"
+                                      >
+                                        Confirm Ingredients
+                                      </Button>
+                                    </CardFooter>
+                                  </Card>
+                                  <h2>Ingredients</h2>
+                                  <Textarea value={cartText} readOnly />
+                                </>
+                              )}
+                            </>
+                          </FormControl>
+                          <FormDescription>
+                            Choose the ingredients.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-          {/* <Button onClick={saveInfo}>Save</Button> */}
+                    <FormField
+                      control={form.control}
+                      name="instructions"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Instructions</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              // onChange={(e) => setInstructions(e.target.value)}
+                              {...field}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            The instructions to prepare the recipe.
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-          {/* Section 2 */}
-          {CID && (
-            <>
-              <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
-              <Button onClick={getPoDSI}>getPoDSI</Button>
-              <Button onClick={deal_status}>deal_status</Button>
-              <Button onClick={register_job}>register_job</Button>
-            </>
-          )}
+                    <Button type="submit">Submit</Button>
+                  </form>
+                </Form>
+              </div>
 
-          {/* Show Recipes */}
-          <Button onClick={getAllRecipes}>Refresh</Button>
-          <RecipeList recipes={recipes} />
+              {/* <Button onClick={saveInfo}>Save</Button> */}
+            </TabsContent>
+          </Tabs>
         </main>
       </div>
     </div>

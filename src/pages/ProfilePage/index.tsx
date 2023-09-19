@@ -1,17 +1,34 @@
 import { Button } from "@/components/ui/button";
+import { FoodSearchResponse, Recipe } from "@/lib/types";
 import lighthouse from "@lighthouse-web3/sdk";
 import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { filecoinCalibration } from "viem/chains";
 import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
+
+interface Item {
+  id: number;
+  name: string;
+  quantity: number;
+}
+
+const recipeRegistryAddress = "0x5145Dc366F25f96f219850F5aCaD50DF76eE424D";
 
 export const ProfilePage = () => {
   const [CID, setCID] = useState<string>();
   const [title, setTitle] = useState<string>();
   const [ingredients, setIngredients] = useState<string>();
   const [instructions, setInstructions] = useState<string>();
+  const [recipes, setRecipes] = useState<Recipe[]>([]);
 
+  // Ingredients
+  const [items, setItems] = useState<Item[]>([]);
+  const [cart, setCart] = useState<Item[]>([]);
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [cartText, setCartText] = useState<string>("");
+
+  // Logics
   const progressCallback = (progressData: {
     total: number;
     uploaded: number;
@@ -62,7 +79,6 @@ export const ProfilePage = () => {
   };
 
   const saveInfo = async () => {
-    const userInfoAddress = "0x8FeC581402D788fCBbc074488883b9d64A5dc790";
     const ww = window as any;
 
     // Viem
@@ -83,7 +99,7 @@ export const ProfilePage = () => {
     const { request } = await publicClient.simulateContract({
       // account,
       account: client.account,
-      address: userInfoAddress,
+      address: recipeRegistryAddress,
       abi: recipeRegistryAbi,
       args: [title, ingredients, instructions, CID],
       functionName: "addRecipe",
@@ -98,33 +114,6 @@ export const ProfilePage = () => {
       "🚀 ~ file: index.tsx:383 ~ submit ~ transaction:",
       transaction
     );
-  };
-
-  const getUserInfo = async () => {
-    const recipeRegistryAddress = "0x5145Dc366F25f96f219850F5aCaD50DF76eE424D";
-    const ww = window as any;
-
-    // Viem
-    const publicClient = createPublicClient({
-      chain: filecoinCalibration,
-      transport: http("https://filecoin-calibration.chainstacklabs.com/rpc/v1"),
-    });
-
-    const [account] = await ww.ethereum.request({
-      method: "eth_requestAccounts",
-    });
-    const client = createWalletClient({
-      account,
-      chain: filecoinCalibration,
-      transport: custom(ww.ethereum),
-    });
-
-    const data = await publicClient.readContract({
-      address: recipeRegistryAddress,
-      abi: recipeRegistryAbi,
-      functionName: "getAllRecipes",
-    });
-    console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data);
   };
 
   const getPoDSI = async () => {
@@ -210,14 +199,165 @@ export const ProfilePage = () => {
     }
   };
 
+  // Ingredients
+
+  const addToSelected = (item: Item) => {
+    const updatedCart = [...cart];
+    const existingItem = updatedCart.find(
+      (cartItem) => cartItem.id === item.id
+    );
+
+    if (existingItem) {
+      existingItem.quantity++;
+    } else {
+      updatedCart.push({ ...item, quantity: 1 });
+    }
+
+    setCart(updatedCart);
+  };
+
+  const reduceQuantity = (item: Item) => {
+    const updatedCart = [...cart];
+    const existingItem = updatedCart.find(
+      (cartItem) => cartItem.id === item.id
+    );
+
+    if (existingItem && existingItem.quantity > 1) {
+      existingItem.quantity--;
+    } else {
+      const itemIndex = updatedCart.findIndex(
+        (cartItem) => cartItem.id === item.id
+      );
+      if (itemIndex !== -1) {
+        updatedCart.splice(itemIndex, 1); // Remove the item from the cart if quantity is 1 or less
+      }
+    }
+
+    setCart(updatedCart);
+  };
+
+  const increaseQuantity = (item: Item) => {
+    const updatedCart = [...cart];
+    const existingItem = updatedCart.find(
+      (cartItem) => cartItem.id === item.id
+    );
+
+    if (existingItem) {
+      existingItem.quantity++;
+    }
+
+    setCart(updatedCart);
+  };
+
+  const removeItem = (item: Item) => {
+    const updatedCart = cart.filter((cartItem) => cartItem.id !== item.id);
+    setCart(updatedCart);
+  };
+
+  const handleExportCart = () => {
+    const cartItemsText = cart
+      .map((cartItem) => `${cartItem.name} - Quantity: ${cartItem.quantity}`)
+      .join("\n");
+    setCartText(cartItemsText);
+    setIngredients(cartItemsText);
+  };
+
+  const handleSearch = async () => {
+    const apiKey = import.meta.env.VITE_USDA_API_KEY;
+    if (typeof apiKey !== "string") {
+      console.log("apiKey is NOT string");
+      return;
+    }
+    const pageSize = 5;
+    const pageNumber = 1;
+    const dataType = "Foundation";
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?query=${searchQuery}&api_key=${apiKey}&pageNumber=${pageNumber}&pageSize=${pageSize}&dataType=${dataType}`;
+
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const data: FoodSearchResponse = await response.json();
+      const foodItems = data.foods.map((food) => ({
+        id: food.fdcId,
+        name: food.description,
+        quantity: 0,
+      }));
+      setItems(foodItems);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const getAllRecipes = async () => {
+    // Viem
+    const publicClient = createPublicClient({
+      chain: filecoinCalibration,
+      transport: http("https://filecoin-calibration.chainstacklabs.com/rpc/v1"),
+    });
+
+    const data = (await publicClient.readContract({
+      address: recipeRegistryAddress,
+      abi: recipeRegistryAbi,
+      functionName: "getAllRecipes",
+    })) as Recipe[];
+    console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data);
+    setRecipes(data);
+  };
+
+  useEffect(() => {
+    getAllRecipes();
+  }, []);
+
   return (
     <>
-      <div>Profile</div>
-      <input onChange={(e) => uploadFileOriginal(e.target.files)} type="file" />
-      <input onChange={(e) => setTitle(e.target.value)} type="text" />
-      <input onChange={(e) => setIngredients(e.target.value)} type="text" />
-      <input onChange={(e) => setInstructions(e.target.value)} type="text" />
+      {/* Section 1 */}
+      <div>
+        <h1>Items</h1>
+        <input
+          onChange={(e) => uploadFileOriginal(e.target.files)}
+          type="file"
+        />
+        <input onChange={(e) => setTitle(e.target.value)} type="text" />
 
+        <input
+          type="text"
+          placeholder="Search items..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+        <button onClick={handleSearch}>Search</button>
+
+        <ul>
+          {items.map((item) => (
+            <li key={item.id}>
+              {item.name}
+              <button onClick={() => addToSelected(item)}>Add to Cart</button>
+            </li>
+          ))}
+        </ul>
+        <h2>Selected Ingredients</h2>
+        <ul>
+          {cart.map((cartItem) => (
+            <li key={cartItem.id}>
+              {cartItem.name} - Quantity: {cartItem.quantity}
+              <button onClick={() => reduceQuantity(cartItem)}>-</button>
+              <button onClick={() => increaseQuantity(cartItem)}>+</button>
+              <button onClick={() => removeItem(cartItem)}>Remove</button>
+            </li>
+          ))}
+        </ul>
+        <button onClick={handleExportCart}>Export Ingredients</button>
+        <h2>Ingredients</h2>
+        <textarea rows={5} cols={30} value={cartText} readOnly />
+      </div>
+
+      {/* <input onChange={(e) => setIngredients(e.target.value)} type="text" /> */}
+      <input onChange={(e) => setInstructions(e.target.value)} type="text" />
+      <Button onClick={saveInfo}>Save</Button>
+
+      {/* Section 2 */}
       {CID && (
         <>
           <img
@@ -230,8 +370,28 @@ export const ProfilePage = () => {
           <Button onClick={register_job}>register_job</Button>
         </>
       )}
-      <Button onClick={saveInfo}>Save</Button>
-      <Button onClick={getUserInfo}>Get Profile Info</Button>
+
+      {/* Show Recipes */}
+      <Button onClick={getAllRecipes}>Refresh</Button>
+      <RecipeList recipes={recipes} />
     </>
   );
 };
+
+function RecipeList({ recipes }: { recipes: Recipe[] }) {
+  return (
+    <div>
+      <h1>Recipe List</h1>
+      <ul>
+        {recipes.map((recipe, index) => (
+          <li key={index}>
+            <h2>{recipe.title}</h2>
+            <p>Ingredients: {recipe.ingredients}</p>
+            <p>Instructions: {recipe.instructions}</p>
+            <p>Author: {recipe.author}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}

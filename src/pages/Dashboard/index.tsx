@@ -1,4 +1,4 @@
-import { Food, FoodSearchResponse } from "@/lib/types";
+import { FoodSearchResponse } from "@/lib/types";
 import React, { useState } from "react";
 
 interface Item {

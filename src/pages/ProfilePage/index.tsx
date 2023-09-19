@@ -6,6 +6,16 @@ import React, { useEffect, useState } from "react";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { filecoinCalibration } from "viem/chains";
 import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuIndicator,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  NavigationMenuViewport,
+} from "@/components/ui/navigation-menu";
 
 interface Item {
   id: number;
@@ -311,7 +321,8 @@ export const ProfilePage = () => {
   }, []);
 
   return (
-    <>
+    <div className="relative flex min-h-screen flex-col">
+      <NavigationBar />
       {/* Section 1 */}
       <div>
         <h1>Items</h1>
@@ -374,9 +385,29 @@ export const ProfilePage = () => {
       {/* Show Recipes */}
       <Button onClick={getAllRecipes}>Refresh</Button>
       <RecipeList recipes={recipes} />
-    </>
+    </div>
   );
 };
+
+function NavigationBar() {
+  return (
+    <header className="supports-backdrop-blur:bg-background/60 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
+      <div className="container flex h-14 items-center">
+        <h1 className="text-white text-2xl font-bold">RecipeAgora</h1>
+        {/* <NavigationMenu>
+          <NavigationMenuList>
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <NavigationMenuLink>Link</NavigationMenuLink>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+        </NavigationMenu> */}
+      </div>
+    </header>
+  );
+}
 
 function RecipeList({ recipes }: { recipes: Recipe[] }) {
   return (

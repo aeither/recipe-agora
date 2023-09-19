@@ -22,6 +22,7 @@
     "@dataverse/xmtp-client-toolkit": "^1.0.27",
     "@lighthouse-web3/sdk": "^0.2.7",
     "@livepeer/react": "2.8.0",
+    "@radix-ui/react-navigation-menu": "^1.1.3",
     "@radix-ui/react-slot": "^1.0.2",
     "@vitejs/plugin-react": "^4.0.4",
     "buffer": "^6.0.3",

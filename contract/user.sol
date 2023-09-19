@@ -1,27 +1,71 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-contract UserInfo {
-    struct User {
-        string name;
-        string photo;
-        string bio;
+contract RecipeRegistry {
+    struct Recipe {
+        string title;
+        string ingredients;
+        string instructions;
+        address author;
+        string cid; // Added CID field
     }
 
-    mapping(address => User) public users;
+    Recipe[] public recipes;
 
-    event UserAdded(address indexed userAddress, string name, string photo, string bio);
+    event RecipeAdded(
+        uint256 indexed recipeId,
+        string title,
+        string ingredients,
+        string instructions,
+        address author,
+        string cid
+    );
 
-    function addUser(string memory _name, string memory _photo, string memory _bio) public {
-        User storage newUser = users[msg.sender];
-        newUser.name = _name;
-        newUser.photo = _photo;
-        newUser.bio = _bio;
-        emit UserAdded(msg.sender, _name, _photo, _bio);
+    function addRecipe(
+        string memory _title,
+        string memory _ingredients,
+        string memory _instructions,
+        string memory _cid
+    ) public {
+        Recipe memory newRecipe = Recipe({
+            title: _title,
+            ingredients: _ingredients,
+            instructions: _instructions,
+            author: msg.sender,
+            cid: _cid
+        });
+        recipes.push(newRecipe);
+        emit RecipeAdded(
+            recipes.length - 1,
+            _title,
+            _ingredients,
+            _instructions,
+            msg.sender,
+            _cid
+        );
     }
 
-    function getUserInfo(address _userAddress) public view returns (string memory, string memory, string memory) {
-        User storage user = users[_userAddress];
-        return (user.name, user.photo, user.bio);
+    function getRecipeInfo(
+        uint256 _recipeId
+    )
+        public
+        view
+        returns (
+            string memory,
+            string memory,
+            string memory,
+            address,
+            string memory
+        )
+    {
+        require(_recipeId < recipes.length, "Recipe does not exist");
+        Recipe storage recipe = recipes[_recipeId];
+        return (
+            recipe.title,
+            recipe.ingredients,
+            recipe.instructions,
+            recipe.author,
+            recipe.cid
+        );
     }
 }

@@ -4,12 +4,13 @@ import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
 import React, { useState } from "react";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { filecoinCalibration } from "viem/chains";
-import { userInfoAbi } from "../../lib/userInfoAbi";
+import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
 
 export const ProfilePage = () => {
   const [CID, setCID] = useState<string>();
-  const [name, setName] = useState<string>();
-  const [bio, setBio] = useState<string>();
+  const [title, setTitle] = useState<string>();
+  const [ingredients, setIngredients] = useState<string>();
+  const [instructions, setInstructions] = useState<string>();
 
   const progressCallback = (progressData: {
     total: number;
@@ -79,14 +80,13 @@ export const ProfilePage = () => {
       transport: custom(ww.ethereum),
     });
 
-    console.log("name, CID, bio: ", name, CID, bio);
     const { request } = await publicClient.simulateContract({
       // account,
       account: client.account,
       address: userInfoAddress,
-      abi: userInfoAbi,
-      args: [name, CID, bio],
-      functionName: "addUser",
+      abi: recipeRegistryAbi,
+      args: [title, ingredients, instructions, CID],
+      functionName: "addRecipe",
     });
     const hash = await client.writeContract(request);
     console.log("🚀 ~ file: index.tsx:373 ~ submit ~ hash:", hash);
@@ -101,7 +101,7 @@ export const ProfilePage = () => {
   };
 
   const getUserInfo = async () => {
-    const userInfoAddress = "0x8FeC581402D788fCBbc074488883b9d64A5dc790";
+    const recipeRegistryAddress = "0xf532b2D586262Cb43E8595E7c43b96cf5734Fd0E";
     const ww = window as any;
 
     // Viem
@@ -120,10 +120,9 @@ export const ProfilePage = () => {
     });
 
     const data = await publicClient.readContract({
-      address: userInfoAddress,
-      abi: userInfoAbi,
-      functionName: "users",
-      args: [client.account.address],
+      address: recipeRegistryAddress,
+      abi: recipeRegistryAbi,
+      functionName: "",
     });
     console.log("🚀 ~ file: index.tsx:150 ~ getUserInfo ~ data:", data);
   };
@@ -215,8 +214,9 @@ export const ProfilePage = () => {
     <>
       <div>Profile</div>
       <input onChange={(e) => uploadFileOriginal(e.target.files)} type="file" />
-      <input onChange={(e) => setName(e.target.value)} type="text" />
-      <input onChange={(e) => setBio(e.target.value)} type="text" />
+      <input onChange={(e) => setTitle(e.target.value)} type="text" />
+      <input onChange={(e) => setIngredients(e.target.value)} type="text" />
+      <input onChange={(e) => setInstructions(e.target.value)} type="text" />
 
       {CID && (
         <>

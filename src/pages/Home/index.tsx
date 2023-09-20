@@ -17,9 +17,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { toast } from "@/components/ui/use-toast";
 import { shortenAddress } from "@/lib/shortenAddress";
 import { FoodSearchResponse, Recipe, StreamDataMap } from "@/lib/types";
 import {
@@ -41,7 +41,6 @@ import { filecoinCalibration } from "viem/chains";
 import * as z from "zod";
 import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
 import { AppContext } from "../../main";
-import { toast, useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   title: z.string(),
@@ -696,6 +695,8 @@ function RecipeList({
 
       const data = await response.json();
       console.log(data);
+
+      toast({ title: data.proof.id, description: data.proof.pieceCID });
     } catch (error) {
       console.error(error);
     }
@@ -719,6 +720,10 @@ function RecipeList({
 
     const data = await response.json();
     console.log(data);
+    toast({
+      title: "Registered successfully!",
+      description: "pieceCID: " + data.pieceCID,
+    });
 
     // console.log(
     //   "🚀 ~ file: index.tsx:426 ~ constdeal_status= ~ status:",
@@ -762,6 +767,9 @@ function RecipeList({
 
       const data = await response.json();
       console.log(data);
+      toast({
+        title: "Job registered successfully.",
+      });
     } catch (error) {
       console.error("Error:", error);
     }
@@ -839,17 +847,26 @@ function RecipeList({
                   </p>
 
                   {recipe.cid && (
-                    <>
-                      <Button onClick={() => getPoDSI(recipe.cid)}>
-                        getPoDSI
+                    <div className="flex gap-2">
+                      <Button
+                        variant={"outline"}
+                        onClick={() => getPoDSI(recipe.cid)}
+                      >
+                        Proof
                       </Button>
-                      <Button onClick={() => deal_status(recipe.cid)}>
-                        deal_status
+                      <Button
+                        variant={"outline"}
+                        onClick={() => deal_status(recipe.cid)}
+                      >
+                        Deal Status
                       </Button>
-                      <Button onClick={() => register_job(recipe.cid)}>
-                        register_job
+                      <Button
+                        variant={"outline"}
+                        onClick={() => register_job(recipe.cid)}
+                      >
+                        Register Job
                       </Button>
-                    </>
+                    </div>
                   )}
                 </CardContent>
                 <CardFooter>

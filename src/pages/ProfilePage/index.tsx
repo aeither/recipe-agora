@@ -1,25 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { FoodSearchResponse, Recipe } from "@/lib/types";
-import lighthouse from "@lighthouse-web3/sdk";
-import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
-import React, { useEffect, useState } from "react";
-import { createPublicClient, createWalletClient, custom, http } from "viem";
-import { filecoinCalibration } from "viem/chains";
-import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuIndicator,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  NavigationMenuViewport,
-} from "@/components/ui/navigation-menu";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -29,17 +15,32 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { shortenAddress } from "@/lib/shortenAddress";
+import { FoodSearchResponse, Recipe, StreamDataMap } from "@/lib/types";
+import {
+  StreamType,
+  useApp,
+  useCreateStream,
+  useFeedsByAddress,
+  useStore,
+} from "@dataverse/hooks";
+import { Model } from "@dataverse/model-parser";
+import { zodResolver } from "@hookform/resolvers/zod";
+import lighthouse from "@lighthouse-web3/sdk";
+import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
+import React, { useCallback, useContext, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import ReactJson from "react-json-view";
+import { useNavigate } from "react-router-dom";
+import { createPublicClient, createWalletClient, custom, http } from "viem";
+import { filecoinCalibration } from "viem/chains";
+import * as z from "zod";
+import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
+import { AppContext } from "../../main";
 
 const formSchema = z.object({
   title: z.string(),
@@ -78,6 +79,90 @@ export const ProfilePage = () => {
       cid: "",
     },
   });
+
+  // Dataverse
+  const { modelParser, appVersion } = useContext(AppContext);
+  const navigate = useNavigate();
+  const [postModel, setPostModel] = useState<Model>();
+  const [currentStreamId, setCurrentStreamId] = useState<string>();
+
+  useEffect(() => {
+    const postModel = modelParser.getModelByName("post");
+    setPostModel(postModel);
+  }, []);
+
+  const store = useStore();
+  const pkh = store.pkh;
+  const posts = store.streamsMap as unknown as StreamDataMap | undefined;
+
+  const { connectApp } = useApp({
+    appId: modelParser.appId,
+    autoConnect: true,
+    onSuccess: (result) => {
+      console.log("[connect]connect app success, result:", result);
+    },
+  });
+
+  const { createdStream: publicPost, createStream: createPublicStream } =
+    useCreateStream({
+      streamType: StreamType.Public,
+      onSuccess: (result: any) => {
+        console.log("[createPublicPost]create public stream success:", result);
+        setCurrentStreamId(result.streamId);
+      },
+    });
+
+  // custom hooks
+  const connect = useCallback(async () => {
+    connectApp();
+  }, [connectApp]);
+
+  const createPublicPost = useCallback(async () => {
+    if (!postModel) {
+      console.error("postModel undefined");
+      return;
+    }
+
+    createPublicStream({
+      modelId: postModel.streams[postModel.streams.length - 1].modelId,
+      stream: {
+        appVersion,
+        title: "I am the title",
+        text: "hello",
+        images: [
+          "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
+        ],
+        videos: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  }, [postModel, createPublicStream]);
+
+  const { loadFeedsByAddress } = useFeedsByAddress({
+    onError: (error) => {
+      console.error("[loadPosts]load streams failed,", error);
+    },
+    onSuccess: (result) => {
+      console.log("[loadPosts]load streams success, result:", result);
+    },
+  });
+
+  const loadPosts = useCallback(async () => {
+    if (!postModel) {
+      console.error("postModel undefined");
+      return;
+    }
+    if (!pkh) {
+      console.error("pkh undefined");
+      return;
+    }
+
+    await loadFeedsByAddress({
+      pkh,
+      modelId: postModel.streams[postModel.streams.length - 1].modelId,
+    });
+  }, [postModel, pkh, loadFeedsByAddress]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     console.log(values);
@@ -370,7 +455,7 @@ export const ProfilePage = () => {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <NavigationBar />
+      <NavigationBar connect={connect} />
 
       {/* Body */}
       <div className="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
@@ -392,8 +477,22 @@ export const ProfilePage = () => {
               )}
 
               {/* Show Recipes */}
-              <Button onClick={getAllRecipes}>Refresh</Button>
-              <RecipeList recipes={recipes} />
+              {/* <Button onClick={getAllRecipes}>Refresh</Button> */}
+              <RecipeList recipes={recipes} posts={posts} loadPosts={loadPosts} />
+
+              {/* Comments */}
+              <Button onClick={createPublicPost}>createPublicPost</Button>
+              {/* {publicPost && (
+                <div className="json-view">
+                  <ReactJson src={publicPost} collapsed={true} />
+                </div>
+              )} */}
+
+              {/* <Button onClick={() => console.log(publicPost)}>
+                publicPost
+              </Button>
+              <Button onClick={loadPosts}>Log</Button>
+              <Button onClick={() => console.log(posts)}>Log</Button> */}
             </TabsContent>
 
             {/* Section Create */}
@@ -608,11 +707,13 @@ export const ProfilePage = () => {
   );
 };
 
-function NavigationBar() {
+function NavigationBar({ connect }: { connect: () => Promise<void> }) {
   return (
     <header className="supports-backdrop-blur:bg-background/60 sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur">
-      <div className="container flex h-14 items-center justify-center">
+      <div className="container flex h-14 items-center justify-between">
         <h1 className="text-white text-xl font-bold">RecipeAgora</h1>
+
+        <Button onClick={connect}>connect</Button>
         {/* <NavigationMenu>
           <NavigationMenuList>
             <NavigationMenuItem>
@@ -628,17 +729,88 @@ function NavigationBar() {
   );
 }
 
-function RecipeList({ recipes }: { recipes: Recipe[] }) {
+function RecipeList({
+  recipes,
+  posts,
+  loadPosts,
+}: {
+  recipes: Recipe[];
+  posts: StreamDataMap | undefined;
+  loadPosts: () => Promise<void>;
+}) {
+  const renderedItems = Object.keys(posts || {}).map((key) => {
+    if (!posts) return <>No Comments</>;
+    const item = posts[key];
+
+    return (
+      <div key={key}>
+        <h2>Title: {item.streamContent.content.title || "No title"}</h2>
+        <p>Text: {item.streamContent.content.text}</p>
+        <p>Images:</p>
+        <ul>
+          {item.streamContent.content.images.map((image, index) => (
+            <li key={index}>
+              <img src={image} alt={`Image ${index}`} />
+            </li>
+          ))}
+        </ul>
+        <p>Videos:</p>
+        <ul>
+          {item.streamContent.content.videos.map((video, index) => (
+            <li key={index}>
+              <video controls>
+                <source src={video} type="video/mp4" />
+              </video>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  });
+
   return (
     <div>
-      <h1>Recipe List</h1>
-      <ul>
+      <h1 className="scroll-m-20 text-4xl font-bold tracking-tight">
+        Highlights
+      </h1>
+      {/* <Separator/> */}
+      <ul className="pt-4">
         {recipes.map((recipe, index) => (
           <li key={index}>
-            <h2>{recipe.title}</h2>
-            <p>Ingredients: {recipe.ingredients}</p>
-            <p>Instructions: {recipe.instructions}</p>
-            <p>Author: {recipe.author}</p>
+            <Card>
+              <CardHeader>
+                <CardTitle>{recipe.title}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="pb-2">
+                  <img
+                    className="rounded-md"
+                    src={`https://gateway.lighthouse.storage/ipfs/${recipe.cid}`}
+                    alt="Profile Image"
+                  />
+                </div>
+
+                <p>
+                  <span className="text-muted-foreground">Ingredients:</span>{" "}
+                  {recipe.ingredients}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Instructions:</span>{" "}
+                  {recipe.instructions}
+                </p>
+                <p>
+                  <span className="text-muted-foreground">Author:</span>{" "}
+                  {shortenAddress(recipe.author)}
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Button onClick={loadPosts}>Open comments</Button>
+                <div className="flex flex-col">
+
+                {renderedItems}
+                </div>
+              </CardFooter>
+            </Card>
           </li>
         ))}
       </ul>

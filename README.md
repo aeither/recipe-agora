@@ -2,7 +2,7 @@
 
 <br />
 <div align="center">
-  <img src="https://github.com/aeither/linea-companion/assets/36173828/aac8b80a-0dd0-4ed5-81ad-6de9f292046e" alt="Logo" width="180" >
+  <img src="https://github.com/aeither/recipe-agora/assets/36173828/992855f4-48b8-43cc-aed5-13f7da9f160b" alt="Logo" width="180" >
 
 <h3 align="center">RecipeAgora</h3>
   <p align="center">

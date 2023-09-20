@@ -1,15 +1,15 @@
+# RecipeAgora
 
-### RecipeAgora
+<br />
+<div align="center">
+  <img src="https://github.com/aeither/recipe-agora/assets/36173828/992855f4-48b8-43cc-aed5-13f7da9f160b" alt="Logo" width="180" >
 
-<br/>
-<p align="center">
-<a href=" " target="_blank">
-<img src="./vite.svg" width="180" alt="Dataverse logo">
-</a >
-</p >
-<br/>
-
-# dapp-base-example
+<h3 align="center">RecipeAgora</h3>
+  <p align="center">
+    Community owned recipe database.
+    <br />
+  </p>
+</div>
 
 ## Overview
 

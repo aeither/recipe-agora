@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { shortenAddress } from "@/lib/shortenAddress";
@@ -34,13 +35,13 @@ import lighthouse from "@lighthouse-web3/sdk";
 import { DealParameters } from "@lighthouse-web3/sdk/dist/types";
 import React, { useCallback, useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import ReactJson from "react-json-view";
 import { useNavigate } from "react-router-dom";
 import { createPublicClient, createWalletClient, custom, http } from "viem";
 import { filecoinCalibration } from "viem/chains";
 import * as z from "zod";
 import { recipeRegistryAbi } from "../../lib/recipeRegistryAbi";
 import { AppContext } from "../../main";
+import { toast, useToast } from "@/components/ui/use-toast";
 
 const formSchema = z.object({
   title: z.string(),
@@ -92,6 +93,7 @@ export const ProfilePage = () => {
   }, []);
 
   const store = useStore();
+  const storeAddress = store.address;
   const pkh = store.pkh;
   const posts = store.streamsMap as unknown as StreamDataMap | undefined;
 
@@ -103,41 +105,10 @@ export const ProfilePage = () => {
     },
   });
 
-  const { createdStream: publicPost, createStream: createPublicStream } =
-    useCreateStream({
-      streamType: StreamType.Public,
-      onSuccess: (result: any) => {
-        console.log("[createPublicPost]create public stream success:", result);
-        setCurrentStreamId(result.streamId);
-      },
-    });
-
   // custom hooks
   const connect = useCallback(async () => {
     connectApp();
   }, [connectApp]);
-
-  const createPublicPost = useCallback(async () => {
-    if (!postModel) {
-      console.error("postModel undefined");
-      return;
-    }
-
-    createPublicStream({
-      modelId: postModel.streams[postModel.streams.length - 1].modelId,
-      stream: {
-        appVersion,
-        title: "I am the title",
-        text: "hello",
-        images: [
-          "https://bafkreib76wz6wewtkfmp5rhm3ep6tf4xjixvzzyh64nbyge5yhjno24yl4.ipfs.w3s.link",
-        ],
-        videos: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    });
-  }, [postModel, createPublicStream]);
 
   const { loadFeedsByAddress } = useFeedsByAddress({
     onError: (error) => {
@@ -478,10 +449,18 @@ export const ProfilePage = () => {
 
               {/* Show Recipes */}
               {/* <Button onClick={getAllRecipes}>Refresh</Button> */}
-              <RecipeList recipes={recipes} posts={posts} loadPosts={loadPosts} />
+              <RecipeList
+                recipes={recipes}
+                posts={posts}
+                loadPosts={loadPosts}
+                postModel={postModel}
+                appVersion={appVersion}
+                setCurrentStreamId={setCurrentStreamId}
+                storeAddress={storeAddress}
+              />
 
               {/* Comments */}
-              <Button onClick={createPublicPost}>createPublicPost</Button>
+              {/* <Button onClick={createPublicPost}>createPublicPost</Button> */}
               {/* {publicPost && (
                 <div className="json-view">
                   <ReactJson src={publicPost} collapsed={true} />
@@ -733,20 +712,73 @@ function RecipeList({
   recipes,
   posts,
   loadPosts,
-}: {
+  postModel,
+  appVersion,
+  setCurrentStreamId,
+  storeAddress,
+}: // createPublicPost,
+{
   recipes: Recipe[];
   posts: StreamDataMap | undefined;
   loadPosts: () => Promise<void>;
+  postModel: Model | undefined;
+  appVersion: string;
+  setCurrentStreamId: React.Dispatch<React.SetStateAction<string | undefined>>;
+  storeAddress: string | undefined;
+  // createPublicPost: () => Promise<void>;
 }) {
+  const [comment, setComment] = useState<string>("");
+
+  const { createdStream: publicPost, createStream: createPublicStream } =
+    useCreateStream({
+      streamType: StreamType.Public,
+      onSuccess: (result: any) => {
+        console.log("[createPublicPost]create public stream success:", result);
+        setCurrentStreamId(result.streamId);
+      },
+    });
+
+  const createPublicPost = useCallback(async () => {
+    console.log("Comment", comment);
+
+    if (!postModel) {
+      console.error("postModel undefined");
+      return;
+    }
+
+    toast({
+      title: "Submitted successfully!",
+      // description: "Wait few seconds",
+    });
+
+    createPublicStream({
+      modelId: postModel.streams[postModel.streams.length - 1].modelId,
+      stream: {
+        appVersion,
+        title: storeAddress,
+        text: comment,
+        images: [],
+        videos: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    });
+  }, [postModel, createPublicStream]);
+
   const renderedItems = Object.keys(posts || {}).map((key) => {
     if (!posts) return <>No Comments</>;
     const item = posts[key];
 
     return (
       <div key={key}>
-        <h2>Title: {item.streamContent.content.title || "No title"}</h2>
-        <p>Text: {item.streamContent.content.text}</p>
-        <p>Images:</p>
+        {/* <h2>Title: {item.streamContent.content.title || "No title"}</h2> */}
+        <p>
+          <span className="text-muted-foreground">
+            {shortenAddress(item.streamContent.content.title || "")}
+          </span>{" "}
+          {item.streamContent.content.text}
+        </p>
+        {/* <p>Images:</p>
         <ul>
           {item.streamContent.content.images.map((image, index) => (
             <li key={index}>
@@ -763,7 +795,7 @@ function RecipeList({
               </video>
             </li>
           ))}
-        </ul>
+        </ul> */}
       </div>
     );
   });
@@ -775,44 +807,63 @@ function RecipeList({
       </h1>
       {/* <Separator/> */}
       <ul className="pt-4">
-        {recipes.map((recipe, index) => (
-          <li key={index}>
-            <Card>
-              <CardHeader>
-                <CardTitle>{recipe.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="pb-2">
-                  <img
-                    className="rounded-md"
-                    src={`https://gateway.lighthouse.storage/ipfs/${recipe.cid}`}
-                    alt="Profile Image"
-                  />
-                </div>
+        {recipes.length !== 0 ? (
+          recipes.map((recipe, index) => (
+            <li key={index}>
+              <Card>
+                <CardHeader>
+                  <CardTitle>{recipe.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="pb-2">
+                    <img
+                      className="rounded-md"
+                      src={`https://gateway.lighthouse.storage/ipfs/${recipe.cid}`}
+                      alt="Profile Image"
+                    />
+                  </div>
 
-                <p>
-                  <span className="text-muted-foreground">Ingredients:</span>{" "}
-                  {recipe.ingredients}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Instructions:</span>{" "}
-                  {recipe.instructions}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Author:</span>{" "}
-                  {shortenAddress(recipe.author)}
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button onClick={loadPosts}>Open comments</Button>
-                <div className="flex flex-col">
-
-                {renderedItems}
-                </div>
-              </CardFooter>
-            </Card>
-          </li>
-        ))}
+                  <p>
+                    <span className="text-muted-foreground">Ingredients:</span>{" "}
+                    {recipe.ingredients}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Instructions:</span>{" "}
+                    {recipe.instructions}
+                  </p>
+                  <p>
+                    <span className="text-muted-foreground">Author:</span>{" "}
+                    {shortenAddress(recipe.author)}
+                  </p>
+                </CardContent>
+                <CardFooter>
+                  {posts ? (
+                    <>
+                      <div className="flex flex-col">
+                        {renderedItems}
+                        <div className="flex flex-col gap-2 py-2">
+                          <Input onChange={(e) => setComment(e.target.value)} />
+                          <Button onClick={createPublicPost}>
+                            Add Comment
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <Button onClick={loadPosts}>Open comments</Button>
+                    </>
+                  )}
+                </CardFooter>
+              </Card>
+            </li>
+          ))
+        ) : (
+          <>
+            {/* <Skeleton className="w-[100px] h-[20px] rounded-full" /> */}
+            <div className="p-4 text-lg">Loading...</div>
+          </>
+        )}
       </ul>
     </div>
   );

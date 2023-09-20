@@ -1,6 +1,7 @@
 export function shortenAddress(address: string): string {
   if (!isValidEthereumAddress(address)) {
-    throw new Error("Invalid Ethereum address");
+    console.log("shortenAddress", "Invalid Ethereum address");
+    return address;
   }
 
   if (address.startsWith("0x")) {

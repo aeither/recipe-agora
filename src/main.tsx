@@ -8,6 +8,7 @@ import "./global.css";
 import { ModelParser, Output } from "@dataverse/model-parser";
 import { WalletProvider } from "@dataverse/wallet-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/toaster";
 
 const appVersion = pacakage.version;
 const modelParser = new ModelParser(app as Output);
@@ -28,6 +29,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
     <DataverseContextProvider>
       <AppContext.Provider value={{ appVersion, modelParser, walletProvider }}>
         <App />
+        <Toaster />
       </AppContext.Provider>
     </DataverseContextProvider>
   </ThemeProvider>

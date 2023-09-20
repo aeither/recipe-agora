@@ -429,8 +429,8 @@ export const ProfilePage = () => {
       <NavigationBar connect={connect} />
 
       {/* Body */}
-      <div className="container flex-1 items-start md:grid md:grid-cols-[220px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[240px_minmax(0,1fr)] lg:gap-10">
-        <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_300px]">
+      <div className="container flex-1 items-start md:grid md:grid-cols-[260px_minmax(0,1fr)] md:gap-6 lg:grid-cols-[280px_minmax(0,1fr)] lg:gap-10">
+        <main className="relative py-6 lg:gap-10 lg:py-8 xl:grid xl:grid-cols-[1fr_460px]">
           <Tabs defaultValue="account" className="flex flex-col w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="account">Recipes</TabsTrigger>

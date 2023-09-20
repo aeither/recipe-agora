@@ -52,3 +52,41 @@ export interface Recipe {
   author: string;
   cid: string;
 }
+
+interface StreamContent {
+  content: {
+    text: string;
+    title?: string;
+    images: string[];
+    videos: string[];
+    createdAt: string;
+    updatedAt: string;
+    appVersion: string;
+    encrypted: string;
+  };
+  file: {
+    indexFileId: string;
+    comment: {
+      mirrorName: string;
+      note: string;
+      tags: string[];
+    };
+    fileType: number;
+    contentId: string;
+    createdAt: string;
+    updatedAt: string;
+    appVersion: string;
+    contentType: string;
+  };
+}
+
+interface StreamData {
+  pkh: string;
+  appId: string;
+  modelId: string;
+  streamContent: StreamContent;
+}
+
+export interface StreamDataMap {
+  [key: string]: StreamData;
+}

@@ -30,6 +30,7 @@ import {
 } from "viem";
 import { filecoinCalibration } from "viem/chains";
 import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 
 export const Home = () => {
   const { modelParser, appVersion } = useContext(AppContext);
@@ -483,22 +484,22 @@ export const Home = () => {
 
   return (
     <>
-      <button onClick={connect}>connect</button>
+      <Button onClick={connect}>connect</Button>
       <div className="black-text">{pkh}</div>
       <hr />
-      <button onClick={createPublicPost}>createPublicPost</button>
+      <Button onClick={createPublicPost}>createPublicPost</Button>
       {publicPost && (
         <div className="json-view">
           <ReactJson src={publicPost} collapsed={true} />
         </div>
       )}
-      <button onClick={createEncryptedPost}>createEncryptedPost</button>
+      <Button onClick={createEncryptedPost}>createEncryptedPost</Button>
       {encryptedPost && (
         <div className="json-view">
           <ReactJson src={encryptedPost} collapsed={true} />
         </div>
       )}
-      <button onClick={createPayablePost}>createPayablePost</button>
+      <Button onClick={createPayablePost}>createPayablePost</Button>
       {payablePost && (
         <div className="json-view">
           <ReactJson src={payablePost} collapsed={true} />
@@ -507,59 +508,59 @@ export const Home = () => {
       <div className="red">
         You need a testnet lens profile to monetize data.
       </div>
-      <button onClick={loadPosts}>loadPosts</button>
+      <Button onClick={loadPosts}>loadPosts</Button>
       {posts && (
         <div className="json-view">
           <ReactJson src={posts} collapsed={true} />
         </div>
       )}
-      <button onClick={updatePost}>updatePost</button>
+      <Button onClick={updatePost}>updatePost</Button>
       {updatedPost && (
         <div className="json-view">
           <ReactJson src={updatedPost} collapsed={true} />
         </div>
       )}
-      <button onClick={monetizePost}>monetizePost</button>
+      <Button onClick={monetizePost}>monetizePost</Button>
       {monetizedPost && (
         <div className="json-view">
           <ReactJson src={monetizedPost} collapsed={true} />
         </div>
       )}
-      <button onClick={unlockPost}>unlockPost</button>
+      <Button onClick={unlockPost}>unlockPost</Button>
       {unlockedPost && (
         <div className="json-view">
           <ReactJson src={unlockedPost} collapsed={true} />
         </div>
       )}
       {/* Lighthouse */}
-      <button onClick={uploadFile}>uploadFile</button>
-      <button onClick={getData}>PoDSI: proof of inclusion</button>
-      <button
+      <Button onClick={uploadFile}>uploadFile</Button>
+      <Button onClick={getData}>PoDSI: proof of inclusion</Button>
+      <Button
         onClick={() =>
           callFileDetails("QmZETJF6NC9p9KkkgczH7SJymhi6HdwvJSv6n2GWdDK4T6")
         }
       >
         callFileDetails
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() => submit("QmZETJF6NC9p9KkkgczH7SJymhi6HdwvJSv6n2GWdDK4T6")}
       >
         Submit
-      </button>
-      <button
+      </Button>
+      <Button
         onClick={() =>
           deal_status("QmTgLAp2Ze2bv7WV2wnZrvtpR5pKJxZ2vtBxZPwr7rM61a")
         }
       >
         Deal Status
-      </button>
-      <button onClick={() => register_job()}>Register Job</button>
+      </Button>
+      <Button onClick={() => register_job()}>Register Job</Button>
 
       <hr />
-      <button onClick={() => navigate("/toolkits")}>Go To Toolkits Page</button>
+      <Button onClick={() => navigate("/toolkits")}>Go To Toolkits Page</Button>
       <br />
       <hr />
-      <button onClick={() => navigate("/profile")}>Go To Profile Page</button>
+      <Button onClick={() => navigate("/profile")}>Go To Profile Page</Button>
       <br />
 
       {/* New Post */}

@@ -229,89 +229,6 @@ export const ProfilePage = () => {
     );
   };
 
-  const getPoDSI = async () => {
-    try {
-      const response = await fetch(
-        `https://api.lighthouse.storage/api/lighthouse/get_proof?cid=${CID}&network=testnet`
-      );
-
-      if (!response.ok) {
-        throw new Error(`Fetch request failed with status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  const deal_status = async (): Promise<void> => {
-    if (!CID) {
-      console.log("CID undefined");
-      return;
-    }
-    console.log("🚀 ~ file: index.tsx:150 ~ constdeal_status= ~ CID:", CID);
-    // const status = await lighthouse.dealStatus(CID);
-
-    const response = await fetch(
-      `https://calibration.lighthouse.storage/api/deal_status?cid=${CID}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Fetch request failed with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log(data);
-
-    // console.log(
-    //   "🚀 ~ file: index.tsx:426 ~ constdeal_status= ~ status:",
-    //   status
-    // );
-  };
-
-  const register_job = async (): Promise<void> => {
-    if (!CID) {
-      console.log("CID undefined");
-      return;
-    }
-
-    const formData = new FormData();
-
-    const cid = CID;
-    // Optional Parameters
-    const requestReceivedTime = new Date();
-    const endDate = requestReceivedTime.setMonth(
-      requestReceivedTime.getMonth() + 1
-    );
-    const replicationTarget = 2;
-    const epochs = 4; // how many epochs before the deal end should the deal be renewed
-    formData.append("cid", cid);
-    formData.append("endDate", endDate.toString());
-    formData.append("replicationTarget", replicationTarget.toString());
-    formData.append("epochs", epochs.toString());
-
-    try {
-      const response = await fetch(
-        "https://calibration.lighthouse.storage/api/register_job",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log(data);
-    } catch (error) {
-      console.error("Error:", error);
-    }
-  };
-
   // Ingredients
 
   const addToSelected = (item: Item) => {
@@ -438,14 +355,14 @@ export const ProfilePage = () => {
             </TabsList>
             {/* Section Recipes */}
             <TabsContent value="account">
-              {CID && (
+              {/* {CID && (
                 <>
                   <div>{`https://gateway.lighthouse.storage/ipfs/${CID}`}</div>
                   <Button onClick={getPoDSI}>getPoDSI</Button>
                   <Button onClick={deal_status}>deal_status</Button>
                   <Button onClick={register_job}>register_job</Button>
                 </>
-              )}
+              )} */}
 
               {/* Show Recipes */}
               {/* <Button onClick={getAllRecipes}>Refresh</Button> */}
@@ -765,6 +682,91 @@ function RecipeList({
     });
   }, [postModel, createPublicStream]);
 
+  // RaaS
+
+  const getPoDSI = async (CID: string) => {
+    try {
+      const response = await fetch(
+        `https://api.lighthouse.storage/api/lighthouse/get_proof?cid=${CID}&network=testnet`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Fetch request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const deal_status = async (CID: string): Promise<void> => {
+    if (!CID) {
+      console.log("CID undefined");
+      return;
+    }
+    console.log("🚀 ~ file: index.tsx:150 ~ constdeal_status= ~ CID:", CID);
+    // const status = await lighthouse.dealStatus(CID);
+
+    const response = await fetch(
+      `https://calibration.lighthouse.storage/api/deal_status?cid=${CID}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`Fetch request failed with status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(data);
+
+    // console.log(
+    //   "🚀 ~ file: index.tsx:426 ~ constdeal_status= ~ status:",
+    //   status
+    // );
+  };
+
+  const register_job = async (CID: string): Promise<void> => {
+    if (!CID) {
+      console.log("CID undefined");
+      return;
+    }
+
+    const formData = new FormData();
+
+    const cid = CID;
+    // Optional Parameters
+    const requestReceivedTime = new Date();
+    const endDate = requestReceivedTime.setMonth(
+      requestReceivedTime.getMonth() + 1
+    );
+    const replicationTarget = 2;
+    const epochs = 4; // how many epochs before the deal end should the deal be renewed
+    formData.append("cid", cid);
+    formData.append("endDate", endDate.toString());
+    formData.append("replicationTarget", replicationTarget.toString());
+    formData.append("epochs", epochs.toString());
+
+    try {
+      const response = await fetch(
+        "https://calibration.lighthouse.storage/api/register_job",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const renderedItems = Object.keys(posts || {}).map((key) => {
     if (!posts) return <>No Comments</>;
     const item = posts[key];
@@ -835,6 +837,20 @@ function RecipeList({
                     <span className="text-muted-foreground">Author:</span>{" "}
                     {shortenAddress(recipe.author)}
                   </p>
+
+                  {recipe.cid && (
+                    <>
+                      <Button onClick={() => getPoDSI(recipe.cid)}>
+                        getPoDSI
+                      </Button>
+                      <Button onClick={() => deal_status(recipe.cid)}>
+                        deal_status
+                      </Button>
+                      <Button onClick={() => register_job(recipe.cid)}>
+                        register_job
+                      </Button>
+                    </>
+                  )}
                 </CardContent>
                 <CardFooter>
                   {posts ? (

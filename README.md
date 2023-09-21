@@ -13,7 +13,15 @@
 
 ## Overview
 
-...
+RecipeAgora is a decentralized recipe sharing that redefines the way you discover, cherish, and share your favorite recipes. It encapsulates the essence of culinary artistry and community interaction. The web app provides a secure way to share and store forever your cherished recipes, ensuring they remain intact and accessible for generations to come. Recipe Registry: We leverage the power of FVM, not only to store but also to validate and register recipes securely. Users can explore recipes and attach RaaS workers to preserve those recipes forever or make them more available by replicating. For passionate cooks, the user interface offers a simple form to upload a photo of your dish, find the ingredients and add a step by step guide to it.
+
+## How technologies are used
+
+**FVM** Smart contract deployed to Calibration Testnet to ensure the integrity of the recipes. File upload. Check Deal Status and Community RaaS to renew and replicate the community's loved recipes.
+
+**Lighthouse**: Seamlessly manages file uploads. Check PoDSI. Attaching RaaS (Renew, Replicate)
+
+**DataverseOS**: Fueling the social aspect of our platform, bringing foodies together to explore, comment, and celebrate the joy of cooking.
 
 ## Instructions
 
@@ -51,6 +59,23 @@ pnpm dev
 
 The demo has been successfully launched. Try it!
 
-## How technologies are used
+## Extra
+
+**Registering a recipe**
 
 https://calibration.filfox.info/en/message/bafy2bzaceab5kwtjivvvkuasg3djzo4ev6v4shwjky2zultydl7tdd7e7rgy2?t=1
+
+**Explore and register**
+
+![CleanShot 2023-09-21 at 17 42 57@2x](https://github.com/aeither/recipe-agora/assets/36173828/bfd255a0-57a4-421c-ad62-6922018ef60a)
+
+**Add comment**
+
+![Add comment](https://github.com/aeither/recipe-agora/assets/36173828/910e2788-53ae-41bd-81db-12207e79975e)
+
+**Share recipes**
+
+![Share recipes](https://github.com/aeither/recipe-agora/assets/36173828/bd07d601-a018-46d5-8487-76b64e8c3d58)
+
+
+

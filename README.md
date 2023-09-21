@@ -77,4 +77,9 @@ https://calibration.filfox.info/en/message/bafy2bzaceab5kwtjivvvkuasg3djzo4ev6v4
 
 ![Add comment](https://github.com/aeither/recipe-agora/assets/36173828/b0b56fc9-0a4d-47d1-8a19-acfdae4bdeae)
 
+## What next
 
+- Unlockables recipes
+- Fully Community governed
+- Video and slides photo view
+- Save and organize recipes

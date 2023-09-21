@@ -51,7 +51,15 @@ assured, Dataverse will not store or disclose your private key..
 After successful deployment, you can find the generated `./output/app.json`,
 which contains various information about this new dapp.
 
-### 4.Start
+### 4.Setup
+
+Copy the enviroment variable from example and fill them out from their respective provider.
+
+```
+cp .env.example .env
+```
+
+### 5.Start
 
 ```
 pnpm dev

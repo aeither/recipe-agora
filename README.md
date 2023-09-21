@@ -13,15 +13,9 @@
 
 ## Overview
 
-This example adds some commonly used
-[dweb-toolkit](https://github.com/dataverse-os/dweb-toolkits) on top of the
-base. In this example, the models will be diverse and varied.
+...
 
-In this example, each toolkit has its own models. In addition to the `post` and
-`profile` models in the base, you can find different toolkit models in the
-`./with-toolkits/models/toolkits` folder.
-
-## Run
+## Instructions
 
 ### 1.Prepare
 
@@ -56,3 +50,7 @@ pnpm dev
 ```
 
 The demo has been successfully launched. Try it!
+
+## How technologies are used
+
+https://calibration.filfox.info/en/message/bafy2bzaceab5kwtjivvvkuasg3djzo4ev6v4shwjky2zultydl7tdd7e7rgy2?t=1

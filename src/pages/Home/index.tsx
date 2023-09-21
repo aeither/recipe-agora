@@ -700,32 +700,41 @@ function RecipeList({
   };
 
   const deal_status = async (CID: string): Promise<void> => {
-    if (!CID) {
-      console.log("CID undefined");
-      return;
+    try {
+      if (!CID) {
+        console.log("CID undefined");
+        return;
+      }
+      console.log("🚀 ~ file: index.tsx:150 ~ const deal_status = ~ CID:", CID);
+
+      const response = await fetch(
+        `https://calibration.lighthouse.storage/api/deal_status?cid=${CID}`
+      );
+
+      if (!response.ok) {
+        throw new Error(`Fetch request failed with status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data);
+      toast({
+        title: "Registered successfully!",
+        // description: "pieceCID: " + data.pieceCID,
+      });
+
+      // console.log(
+      //   "🚀 ~ file: index.tsx:426 ~ const deal_status = ~ status:",
+      //   status
+      // );
+    } catch (error: any) {
+      // Handle the error here
+      console.error("An error occurred:", error);
+      // You can also display an error message to the user if needed
+      toast({
+        title: "Error",
+        description: "An error occurred while retrieving the deal status. Please re-register the jobs.",
+      });
     }
-    console.log("🚀 ~ file: index.tsx:150 ~ constdeal_status= ~ CID:", CID);
-    // const status = await lighthouse.dealStatus(CID);
-
-    const response = await fetch(
-      `https://calibration.lighthouse.storage/api/deal_status?cid=${CID}`
-    );
-
-    if (!response.ok) {
-      throw new Error(`Fetch request failed with status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log(data);
-    toast({
-      title: "Registered successfully!",
-      description: "pieceCID: " + data.pieceCID,
-    });
-
-    // console.log(
-    //   "🚀 ~ file: index.tsx:426 ~ constdeal_status= ~ status:",
-    //   status
-    // );
   };
 
   const register_job = async (CID: string): Promise<void> => {
@@ -851,7 +860,7 @@ function RecipeList({
                     </p>
 
                     {recipe.cid && (
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 justify-between pt-2">
                         <Button
                           variant={"outline"}
                           onClick={() => getPoDSI(recipe.cid)}
@@ -862,13 +871,13 @@ function RecipeList({
                           variant={"outline"}
                           onClick={() => deal_status(recipe.cid)}
                         >
-                          Deal Status
+                          Status
                         </Button>
                         <Button
                           variant={"outline"}
                           onClick={() => register_job(recipe.cid)}
                         >
-                          Register Job
+                          Register
                         </Button>
                       </div>
                     )}

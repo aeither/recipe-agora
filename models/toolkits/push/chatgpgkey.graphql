@@ -1,5 +1,0 @@
-type pushchatgpgkey
-  @createModel(accountRelation: LIST, description: "pushchatgpgkey") {
-  owner: DID! @documentAccount
-  pgp_key: String! @string(maxLength: 300000000)
-}

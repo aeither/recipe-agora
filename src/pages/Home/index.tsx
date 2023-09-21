@@ -55,6 +55,14 @@ interface Item {
   quantity: number;
 }
 
+const ww = window as any;
+
+// Viem
+const publicClient = createPublicClient({
+  chain: filecoinCalibration,
+  transport: http("https://filecoin-calibration.chainstacklabs.com/rpc/v1"),
+});
+
 const recipeRegistryAddress = "0x5145Dc366F25f96f219850F5aCaD50DF76eE424D";
 
 export const Home = () => {
@@ -191,14 +199,6 @@ export const Home = () => {
   };
 
   const saveInfo = async () => {
-    const ww = window as any;
-
-    // Viem
-    const publicClient = createPublicClient({
-      chain: filecoinCalibration,
-      transport: http("https://filecoin-calibration.chainstacklabs.com/rpc/v1"),
-    });
-
     const [account] = await ww.ethereum.request({
       method: "eth_requestAccounts",
     });
@@ -322,11 +322,6 @@ export const Home = () => {
 
   const getAllRecipes = async () => {
     // Viem
-    const publicClient = createPublicClient({
-      chain: filecoinCalibration,
-      transport: http("https://filecoin-calibration.chainstacklabs.com/rpc/v1"),
-    });
-
     const data = (await publicClient.readContract({
       address: recipeRegistryAddress,
       abi: recipeRegistryAbi,
@@ -473,7 +468,9 @@ export const Home = () => {
                                     setSearchQuery(e.target.value)
                                   }
                                 />
-                                <Button onClick={handleSearch}>Search</Button>
+                                <Button type="button" onClick={handleSearch}>
+                                  Find
+                                </Button>
                               </div>
 
                               {items.length > 0 && (
@@ -498,7 +495,7 @@ export const Home = () => {
                                                 addToSelected(item)
                                               }
                                             >
-                                              Add to Cart
+                                              Add
                                             </Button>
                                           </li>
                                         ))}
@@ -818,79 +815,88 @@ function RecipeList({
       {/* <Separator/> */}
       <ul className="pt-4">
         {recipes.length !== 0 ? (
-          recipes.map((recipe, index) => (
-            <li key={index}>
-              <Card>
-                <CardHeader>
-                  <CardTitle>{recipe.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="pb-2">
-                    <img
-                      className="rounded-md"
-                      src={`https://gateway.lighthouse.storage/ipfs/${recipe.cid}`}
-                      alt="Profile Image"
-                    />
-                  </div>
-
-                  <p>
-                    <span className="text-muted-foreground">Ingredients:</span>{" "}
-                    {recipe.ingredients}
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">Instructions:</span>{" "}
-                    {recipe.instructions}
-                  </p>
-                  <p>
-                    <span className="text-muted-foreground">Author:</span>{" "}
-                    {shortenAddress(recipe.author)}
-                  </p>
-
-                  {recipe.cid && (
-                    <div className="flex gap-2">
-                      <Button
-                        variant={"outline"}
-                        onClick={() => getPoDSI(recipe.cid)}
-                      >
-                        Proof
-                      </Button>
-                      <Button
-                        variant={"outline"}
-                        onClick={() => deal_status(recipe.cid)}
-                      >
-                        Deal Status
-                      </Button>
-                      <Button
-                        variant={"outline"}
-                        onClick={() => register_job(recipe.cid)}
-                      >
-                        Register Job
-                      </Button>
+          recipes
+            .slice()
+            .reverse()
+            .map((recipe, index) => (
+              <li key={index} className="py-2">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{recipe.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="pb-2">
+                      <img
+                        className="rounded-md"
+                        src={`https://gateway.lighthouse.storage/ipfs/${recipe.cid}`}
+                        alt="Profile Image"
+                      />
                     </div>
-                  )}
-                </CardContent>
-                <CardFooter>
-                  {posts ? (
-                    <>
-                      <div className="flex flex-col">
-                        {renderedItems}
-                        <div className="flex flex-col gap-2 py-2">
-                          <Input onChange={(e) => setComment(e.target.value)} />
-                          <Button onClick={createPublicPost}>
-                            Add Comment
-                          </Button>
-                        </div>
+
+                    <p>
+                      <span className="text-muted-foreground">
+                        Ingredients:
+                      </span>{" "}
+                      {recipe.ingredients}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">
+                        Instructions:
+                      </span>{" "}
+                      {recipe.instructions}
+                    </p>
+                    <p>
+                      <span className="text-muted-foreground">Author:</span>{" "}
+                      {shortenAddress(recipe.author)}
+                    </p>
+
+                    {recipe.cid && (
+                      <div className="flex gap-2">
+                        <Button
+                          variant={"outline"}
+                          onClick={() => getPoDSI(recipe.cid)}
+                        >
+                          Proof
+                        </Button>
+                        <Button
+                          variant={"outline"}
+                          onClick={() => deal_status(recipe.cid)}
+                        >
+                          Deal Status
+                        </Button>
+                        <Button
+                          variant={"outline"}
+                          onClick={() => register_job(recipe.cid)}
+                        >
+                          Register Job
+                        </Button>
                       </div>
-                    </>
-                  ) : (
-                    <>
-                      <Button onClick={loadPosts}>Open comments</Button>
-                    </>
-                  )}
-                </CardFooter>
-              </Card>
-            </li>
-          ))
+                    )}
+                  </CardContent>
+                  <CardFooter>
+                    {posts ? (
+                      <>
+                        <div className="flex flex-col">
+                          {renderedItems}
+                          <div className="flex flex-col gap-2 py-2">
+                            <Input
+                              onChange={(e) => setComment(e.target.value)}
+                            />
+                            <Button onClick={createPublicPost}>
+                              Add Comment
+                            </Button>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <Button onClick={loadPosts}>Open comments</Button>
+                      </>
+                    )}
+                  </CardFooter>
+                </Card>
+              </li>
+            ))
         ) : (
           <>
             {/* <Skeleton className="w-[100px] h-[20px] rounded-full" /> */}

@@ -102,7 +102,9 @@ export const Home = () => {
   const store = useStore();
   const storeAddress = store.address;
   const pkh = store.pkh;
+  const foldersMap = store.foldersMap;
   const posts = store.streamsMap as unknown as StreamDataMap | undefined;
+  console.log("🚀 ~ file: index.tsx:106 ~ Home ~ foldersMap:", foldersMap)
 
   const { connectApp } = useApp({
     appId: modelParser.appId,
@@ -640,6 +642,7 @@ function RecipeList({
   storeAddress: string | undefined;
   // createPublicPost: () => Promise<void>;
 }) {
+  console.log("posts", posts);
   const [comment, setComment] = useState<string>("");
 
   const { createdStream: publicPost, createStream: createPublicStream } =
@@ -651,32 +654,36 @@ function RecipeList({
       },
     });
 
-  const createPublicPost = useCallback(async () => {
-    console.log("Comment", comment);
+  const createPublicPost = useCallback(
+    async (index: number) => {
+      console.log("Comment", comment);
 
-    if (!postModel) {
-      console.error("postModel undefined");
-      return;
-    }
+      if (!postModel) {
+        console.error("postModel undefined");
+        return;
+      }
 
-    toast({
-      title: "Submitted successfully!",
-      // description: "Wait few seconds",
-    });
+      toast({
+        title: "Submitted successfully!",
+        // description: "Wait few seconds",
+      });
 
-    createPublicStream({
-      modelId: postModel.streams[postModel.streams.length - 1].modelId,
-      stream: {
-        appVersion,
-        title: storeAddress,
-        text: comment,
-        images: [],
-        videos: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-    });
-  }, [postModel, createPublicStream]);
+      createPublicStream({
+        modelId: postModel.streams[postModel.streams.length - 1].modelId,
+        stream: {
+          appVersion,
+          title: storeAddress,
+          text: comment,
+          counter: index.toString(),
+          images: [],
+          videos: [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      });
+    },
+    [postModel, createPublicStream]
+  );
 
   // RaaS
 
@@ -732,7 +739,8 @@ function RecipeList({
       // You can also display an error message to the user if needed
       toast({
         title: "Error",
-        description: "An error occurred while retrieving the deal status. Please re-register the jobs.",
+        description:
+          "An error occurred while retrieving the deal status. Please re-register the jobs.",
       });
     }
   };
@@ -815,6 +823,14 @@ function RecipeList({
       </div>
     );
   });
+  console.log(
+    "🚀 ~ file: index.tsx:824 ~ renderedItems ~ renderedItems:",
+    renderedItems
+  );
+  console.log(
+    "🚀 ~ file: index.tsx:824 ~ renderedItems ~ renderedItems:",
+    renderedItems
+  );
 
   return (
     <div>
@@ -886,12 +902,12 @@ function RecipeList({
                     {posts ? (
                       <>
                         <div className="flex flex-col">
-                          {renderedItems}
+                          <RenderedItems posts={posts} index={index}/>
                           <div className="flex flex-col gap-2 py-2">
                             <Input
                               onChange={(e) => setComment(e.target.value)}
                             />
-                            <Button onClick={createPublicPost}>
+                            <Button onClick={() => createPublicPost(index)}>
                               Add Comment
                             </Button>
                           </div>
@@ -915,4 +931,34 @@ function RecipeList({
       </ul>
     </div>
   );
+}
+
+function RenderedItems({
+  posts,
+  index,
+}: {
+  posts: StreamDataMap | undefined;
+  index: number;
+}) {
+  const renderedItems = Object.keys(posts || {}).map((key) => {
+    if (!posts) return <>No Comments</>;
+    const item = posts[key];
+
+    console.log(item.streamContent.content.counter, " === ", index);
+
+    return (
+      <div key={key}>
+        {item.streamContent.content.counter === index.toString() && (
+          <p>
+            <span className="text-muted-foreground">
+              {shortenAddress(item.streamContent.content.title || "")}
+            </span>{" "}
+            {item.streamContent.content.text}
+          </p>
+        )}
+      </div>
+    );
+  });
+
+  return <>{renderedItems}</>;
 }

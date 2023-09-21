@@ -57,6 +57,7 @@ interface StreamContent {
   content: {
     text: string;
     title?: string;
+    counter?: string;
     images: string[];
     videos: string[];
     createdAt: string;

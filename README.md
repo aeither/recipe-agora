@@ -2,7 +2,7 @@
 
 <br />
 <div align="center">
-  <img src="https://github.com/aeither/recipe-agora/assets/36173828/992855f4-48b8-43cc-aed5-13f7da9f160b" alt="Logo" width="180" >
+  <img src="https://github.com/aeither/recipe-agora/assets/36173828/588b543b-dc29-4da0-90b0-ae1710d5a1ac" alt="Logo" width="180" >
 
 <h3 align="center">RecipeAgora</h3>
   <p align="center">
@@ -67,15 +67,14 @@ https://calibration.filfox.info/en/message/bafy2bzaceab5kwtjivvvkuasg3djzo4ev6v4
 
 **Explore and register**
 
-![CleanShot 2023-09-21 at 17 42 57@2x](https://github.com/aeither/recipe-agora/assets/36173828/bfd255a0-57a4-421c-ad62-6922018ef60a)
+![Explore and register](https://github.com/aeither/recipe-agora/assets/36173828/7e5f136d-775a-4097-bffc-970c435752f0)
 
 **Add comment**
 
-![Add comment](https://github.com/aeither/recipe-agora/assets/36173828/910e2788-53ae-41bd-81db-12207e79975e)
+![Share recipes](https://github.com/aeither/recipe-agora/assets/36173828/4fdd8b3d-43ff-4b53-b561-e43f1c2eb2b7)
 
 **Share recipes**
 
-![Share recipes](https://github.com/aeither/recipe-agora/assets/36173828/bd07d601-a018-46d5-8487-76b64e8c3d58)
-
+![Add comment](https://github.com/aeither/recipe-agora/assets/36173828/b0b56fc9-0a4d-47d1-8a19-acfdae4bdeae)
 
 
